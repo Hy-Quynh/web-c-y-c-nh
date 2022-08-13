@@ -1,0 +1,35 @@
+.dashboardInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  :global {
+    .dashboard-info-item {
+      width: 32%;
+      height: 150px;
+      border-radius: 10px;
+      .title {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .result {
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+      }
+    }
+    .dashboard-info-item.item-1 {
+      background-color: #faf4b7;
+      border: 1px solid #faf4b7;
+    }
+    .dashboard-info-item.item-2 {
+      background-color: #f6c6ea;
+      border: 1px solid #f6c6ea;
+    }
+    .dashboard-info-item.item-3 {
+      background-color: #cdf0ea;
+      background-color: #cdf0ea;
+    }
+  }
+}
