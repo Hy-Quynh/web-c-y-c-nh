@@ -53,7 +53,7 @@ export default function ComponentAdminAccountRole(props) {
   });
   const [newRoleData, setNewRoleData] = useState({
     name: "",
-    role_function: "",
+    role_function: "admin-dashboard",
   });
   const [addRoleNoti, setAddRoleNoti] = useState({
     status: false,
@@ -110,7 +110,7 @@ export default function ComponentAdminAccountRole(props) {
         }
         getAllRoleData();
         setOpenRoleModal({ status: false, type: "" });
-        setNewRoleData({ name: "", role_function: "" });
+        setNewRoleData({ name: "", role_function: "admin-dashboard" });
         return true;
       }
       return false;
@@ -138,7 +138,7 @@ export default function ComponentAdminAccountRole(props) {
         if (addRes.data && addRes.data.success) {
           getAllRoleData();
           setOpenRoleModal({ status: false, type: "" });
-          setNewRoleData({ name: "", role_function: "" });
+          setNewRoleData({ name: "", role_function: "admin-dashboard" });
           return true;
         } 
       }
@@ -208,6 +208,7 @@ export default function ComponentAdminAccountRole(props) {
                     key={`add-role-modal-${roleIndex}`}
                     control={
                       <Checkbox
+                        disabled={roleItem.value==='admin-dashboard'}
                         checked={newRoleData.role_function
                           .split(",")
                           .includes(roleItem.value)}
@@ -252,7 +253,7 @@ export default function ComponentAdminAccountRole(props) {
           variant="contained"
           onClick={() => {
             setOpenRoleModal({ status: true, type: "add" });
-            setNewRoleData({ name: "", role_function: "" });
+            setNewRoleData({ name: "", role_function: "admin-dashboard" });
           }}
         >
           Thêm mới

@@ -45,13 +45,11 @@ export default function Login() {
       toast.success(
         "Bạn đã đăng nhập thành công, chuyển hướng sang trang chính sau 3 giây"
       );
-      setTimeout(() => {
-        if (payload?.type === 'user') {
-          router.push({ pathname: "/" });
-        } else {
-          router.push({ pathname: "/admin" });
-        }
-      }, 3000);
+      if (payload?.type === "user") {
+        router.push({ pathname: "/" });
+      } else {
+        router.push({ pathname: "/admin" });
+      }
     } else {
       toast.error(
         loginRes?.data?.error ||
@@ -104,7 +102,7 @@ export default function Login() {
                   fullWidth
                   label="Mật khẩu"
                   placeholder="Nhập vào mật khẩu"
-                  type={'password'}
+                  type={"password"}
                 />
               </Grid>
               {loginError?.status && (

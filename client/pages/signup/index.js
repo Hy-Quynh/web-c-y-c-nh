@@ -96,11 +96,9 @@ export default function Register() {
       toast.success(
         "Đăng kí tài khoản thành công, bạn sẽ chuyển hướng sang trang đăng nhập sau 3 giây"
       );
-      setTimeout(() => {
-        router.push({
-          pathname: "/login",
-        });
-      }, 3000);
+      router.push({
+        pathname: "/login",
+      });
     } else {
       toast.error(registerRes?.data?.error || "Đăng kí tài khoản thất bại");
     }
