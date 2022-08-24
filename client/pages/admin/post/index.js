@@ -31,6 +31,8 @@ import styles from "./style.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
 import dynamic from "next/dynamic";
 import CustomDialog from "../../../components/CustomDialog";
+import Image from "next/image";
+import { BLUR_BASE64 } from "../../../utils/constants";
 
 const maxFileSize = 100000; //100 kb
 const controls = [
@@ -466,10 +468,13 @@ export default function AdminPost(props) {
                                 </CustomPopover>
                               </Stack>
                             ) : column.id === "blog_image" ? (
-                              <img
+                              <Image
                                 src={row.blog_image}
-                                style={{ width: "100px", height: "100px" }}
+                                width={100}
+                                height={100}
                                 alt=""
+                                placeholder='blur'
+                                blurDataURL={BLUR_BASE64}
                               />
                             ) : column.id === "create_at" ? (
                               dateTimeConverter(value)

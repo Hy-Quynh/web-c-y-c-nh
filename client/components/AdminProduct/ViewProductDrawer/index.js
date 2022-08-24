@@ -18,10 +18,11 @@ const inputStyle = {
 
 export default function ViewProductDrawer(props) {
   const { visible, initData, onClose } = props;
+
   return (
     <React.Fragment key="right">
       <Drawer anchor="right" open={visible} onClose={() => onClose()}>
-        <Box sx={{ width: "50vw", minWidth: "300px", paddingTop: "80px" }}>
+        <Box sx={{ width: "70vw", minWidth: "300px", paddingTop: "80px" }}>
           <Stack justifyContent={"end"}>
             <Box>
               <Button onClick={() => onClose()}>
@@ -93,6 +94,25 @@ export default function ViewProductDrawer(props) {
               </Box>
               <Box sx={inputStyle}>{initData?.product_price}</Box>
             </Stack>
+
+            <Stack
+              flexWrap="nowrap"
+              flexDirection={"row"}
+              alignItems="center"
+              justifyContent="flex-start"
+              style={{ marginBottom: "20px" }}
+            >
+              <Box sx={{ width: "20%" }}>
+                <div style={{ color: "#1876D1" }}>Giá giảm:</div>
+              </Box>
+              <Box sx={inputStyle}>
+                {Number(initData?.product_sale) > 0 &&
+                Number(initData?.product_sale) !==
+                  Number(initData?.product_price)
+                  ? initData?.product_sale
+                  : ""}
+              </Box>
+            </Stack>
             <Stack
               flexWrap="nowrap"
               flexDirection={"row"}
@@ -106,6 +126,57 @@ export default function ViewProductDrawer(props) {
                 {dateTimeConverter(initData?.create_at)}
               </Box>
             </Stack>
+
+            <Stack
+              flexWrap="nowrap"
+              flexDirection={"row"}
+              alignItems="flex-start"
+              justifyContent="flex-start"
+              style={{ marginTop: "20px" }}
+            >
+              <Box sx={{ width: "20%" }}>
+                <div style={{ color: "#1876D1" }}>Chương trình khuyến mãi:</div>
+              </Box>
+              <Box
+                sx={{
+                  width: "80%",
+                  border: "1px solid #1876D1",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  marginLeft: "20px",
+                  overflowX: "auto",
+                }}
+              >
+                {initData?.promo?.map((item, index) => {
+                  if (item?.promo_rule === "FREE_PRODUCT") {
+                    return (
+                      <div
+                        style={{
+                          padding: "5px",
+                          color: "black",
+                          marginBottom: "10px",
+                        }}
+                        key={`product-item-${index}`}
+                      >
+                        <div style={{fontSize: '18px'}}>
+                          <b>{item?.promo_name}</b>
+                        </div>
+                        <ul>
+                          {item?.free_product?.map?.((freeItem, freeIndex) => {
+                            return (
+                              <li key={`product-item-${freeIndex}`}>
+                                {freeItem?.product_name}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    );
+                  }
+                })}
+              </Box>
+            </Stack>
+
             <Stack
               flexWrap="nowrap"
               flexDirection={"row"}
@@ -123,7 +194,7 @@ export default function ViewProductDrawer(props) {
                   padding: "10px",
                   borderRadius: "5px",
                   marginLeft: "20px",
-                  overflowX: 'auto'
+                  overflowX: "auto",
                 }}
               >
                 <Markup content={initData?.product_description} />

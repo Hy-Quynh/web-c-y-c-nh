@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const asyncBusboy = require("async-busboy");
 const bcrypt = require("bcrypt");
-const { getAllRole, createRoleData, deleteRoleData, updateRoleData, getRoleFunctionByName } = require("../models/role");
+const { getAllRole, createRoleData, deleteRoleData, updateRoleData, getRoleFunctionByName, getRoleByAdminId } = require("../models/role");
 
 module.exports = {
   getAllRole: asyncHandler(async (req, res) => {
@@ -32,6 +32,12 @@ module.exports = {
   getRoleFunctionByName: asyncHandler(async (req, res) => {
     const {roleName} = req.params
     const results = await getRoleFunctionByName(roleName)
+    res.send({success: true, payload: results})
+  }),
+
+  getRoleByAdminId: asyncHandler(async (req, res) => {
+    const {adminId} = req.params
+    const results = await getRoleByAdminId(adminId)
     res.send({success: true, payload: results})
   }),
 }

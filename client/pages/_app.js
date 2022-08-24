@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { parseJSON } from "../utils/common";
 import { USER_INFO_KEY } from "../utils/constants";
+import '/styles/global.scss';
 
 const MyApp = ({ Component, pageProps }) => {
   const router = useRouter()

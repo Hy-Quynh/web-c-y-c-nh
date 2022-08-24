@@ -187,7 +187,6 @@ export default function AdminAccount() {
           }}
         >
           <Alert
-            badgeContent={4}
             color="error"
             icon={false}
             onClick={() => setChangeStatusPopoverId(userId)}
@@ -209,7 +208,6 @@ export default function AdminAccount() {
           }}
         >
           <Alert
-            badgeContent={4}
             color="success"
             icon={false}
             sx={{ cursor: "pointer", textAlign: "center" }}

@@ -14,14 +14,6 @@ export async function getUserInfo(userId){
   })
 }
 
-export async function updateUserInfo({id, email, name, address, phone_number}) {
-  return request({
-    method: 'POST',
-    url: `/user/${id}`,
-    body: {email, name, address, phone_number}
-  })
-}
-
 export async function deleteUser(userId, type) {
   return request({
     method: 'DELETE',
@@ -41,5 +33,13 @@ export async function updateUserName(first_name, last_name, userId) {
     url: `/user/${userId}/name`,
     method: 'PUT',
     body: {first_name, last_name}
+  })
+}
+
+export async function updateUserInfo({id, email, first_name, last_name, address, phone_number}) {
+  return request({
+    url: `/user/${id}`,
+    method: 'PUT',
+    body: {email, first_name, last_name, address, phone_number} 
   })
 }

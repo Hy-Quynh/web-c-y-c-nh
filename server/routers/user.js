@@ -8,5 +8,6 @@ router.delete('/:userId', userController.deleteUserInfo);
 router.put('/status/:userId', userController.updateUserStatus);
 router.put('/:userId/name', userController.updateUserName);
 router.put('/:userId/avatar', userController.updateUserAvatar);
+router.put('/:userId', userController.updateUserInfo);
 
 module.exports = router;

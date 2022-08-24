@@ -39,19 +39,24 @@ export default function Login() {
     const loginRes = await userLogin(email, password);
 
     if (loginRes?.data?.success) {
-      const payload = loginRes?.data?.payload
-      delete payload?.password
-      localStorage.setItem(USER_INFO_KEY, JSON.stringify(payload))
-      toast.success('Bạn đã đăng nhập thành công, chuyển hướng sang trang chính sau 3 giây')
+      const payload = loginRes?.data?.payload;
+      delete payload?.password;
+      localStorage.setItem(USER_INFO_KEY, JSON.stringify(payload));
+      toast.success(
+        "Bạn đã đăng nhập thành công, chuyển hướng sang trang chính sau 3 giây"
+      );
       setTimeout(() => {
-        if ( payload?.role === 1 ){
-          router.push({pathname: '/'})
-        }else{
-          router.push({pathname: '/admin'})
+        if (payload?.type === 'user') {
+          router.push({ pathname: "/" });
+        } else {
+          router.push({ pathname: "/admin" });
         }
-      }, 3000)  
-    }else{
-      toast.error(loginRes?.data?.error || 'Bạn đã đăng nhập thất bại, vui lòng thử lại sau')
+      }, 3000);
+    } else {
+      toast.error(
+        loginRes?.data?.error ||
+          "Bạn đã đăng nhập thất bại, vui lòng thử lại sau"
+      );
     }
   };
 
@@ -80,37 +85,34 @@ export default function Login() {
             noValidate
             sx={{ mt: 1 }}
           >
-            <label style={{color: 'rgb(33,33,33)'}}>Email: </label>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              InputLabelProps={{shrink: false}}
-              placeholder='Nhập vào địa chỉ email'
-              sx={{marginTop: '-1px'}}
-            />
-            <label style={{color: 'rgb(33,33,33)'}}>Mật khẩu: </label>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              InputLabelProps={{shrink: false}}
-              placeholder='Nhập vào mật khẩu'
-              sx={{marginTop: '-1px'}}
-            />
-            {loginError?.status && (
-              <Grid item xs={12}>
-                <p style={{ color: "red", margin: 0 }}>{loginError?.error}</p>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12}>
+                <TextField
+                  id="email"
+                  name="email"
+                  required
+                  fullWidth
+                  label="Email"
+                  placeholder="Nhập vào địa chỉ email"
+                />
               </Grid>
-            )}
+              <Grid item xs={12} sm={12}>
+                <TextField
+                  id="password"
+                  name="password"
+                  required
+                  fullWidth
+                  label="Mật khẩu"
+                  placeholder="Nhập vào mật khẩu"
+                  type={'password'}
+                />
+              </Grid>
+              {loginError?.status && (
+                <Grid item xs={12}>
+                  <p style={{ color: "red", margin: 0 }}>{loginError?.error}</p>
+                </Grid>
+              )}
+            </Grid>
             <Button
               type="submit"
               fullWidth

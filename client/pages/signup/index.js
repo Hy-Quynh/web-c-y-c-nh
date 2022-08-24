@@ -31,7 +31,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const router = useRouter()
+  const router = useRouter();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -89,18 +89,20 @@ export default function Register() {
       lastName,
       email,
       password,
-      type: 'user'
+      type: "user",
     });
 
-    if ( registerRes?.data?.success ){
-      toast.success('Đăng kí tài khoản thành công, bạn sẽ chuyển hướng sang trang đăng nhập sau 3 giây')
+    if (registerRes?.data?.success) {
+      toast.success(
+        "Đăng kí tài khoản thành công, bạn sẽ chuyển hướng sang trang đăng nhập sau 3 giây"
+      );
       setTimeout(() => {
         router.push({
-          pathname: '/login'
-        })
-      }, 3000)
-    }else{
-      toast.error(registerRes?.data?.error || 'Đăng kí tài khoản thất bại')
+          pathname: "/login",
+        });
+      }, 3000);
+    } else {
+      toast.error(registerRes?.data?.error || "Đăng kí tài khoản thất bại");
     }
   };
 
@@ -144,6 +146,7 @@ export default function Register() {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
+                  type={"password"}
                   required
                   fullWidth
                   id="lastName"

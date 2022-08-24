@@ -42,8 +42,10 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ViewProductDrawer from "../../../components/AdminProduct/ViewProductDrawer";
 import styles from "./style.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
+import Image from "next/image";
+import { BLUR_BASE64 } from "../../../utils/constants";
 
-const maxFileSize = 100000; //100 kb
+const maxFileSize = 500000; //100 kb
 const controls = [
   "bold",
   "italic",
@@ -87,6 +89,7 @@ const columns = [
     align: "center",
   },
 ];
+
 const BraftEditor = dynamic(() => import("braft-editor"), {
   ssr: false,
 });
@@ -115,7 +118,7 @@ export default function AdminProduct() {
   const [popoverId, setPopoverId] = useState("");
   const [listCategory, setListCategory] = useState([]);
   const [braftValue, setBraftValue] = useState("");
-  const searchText = useRef('')
+  const searchText = useRef("");
 
   const setBraftEditorValue = async (value) => {
     const Braft = (await import("braft-editor")).default;
@@ -137,9 +140,9 @@ export default function AdminProduct() {
 
   const getListProductData = async (searchText) => {
     try {
-      const productRes = await getListProduct(searchText || '');
+      const productRes = await getListProduct(searchText || "");
       if (productRes?.data?.success) {
-        setListProduct(productRes?.data?.payload);
+        setListProduct(productRes?.data?.payload?.product);
       }
     } catch (error) {
       console.log("getListProductData error >>> ", error);
@@ -311,7 +314,7 @@ export default function AdminProduct() {
   };
 
   const validateFn = (file) => {
-    let fileSizeError = "File Should be less than 100 kb";
+    let fileSizeError = "File Should be less than 500 kb";
 
     if (file.size > maxFileSize) {
       toast.warn(fileSizeError);
@@ -329,7 +332,7 @@ export default function AdminProduct() {
 
   return (
     <>
-      {addProductModal.status && addProductModal.type !== 'view' && (
+      {addProductModal.status && addProductModal.type !== "view" && (
         <CustomDialog
           onClose={() =>
             setAddProductModal({ ...addProductModal, status: false })
@@ -452,13 +455,13 @@ export default function AdminProduct() {
         </CustomDialog>
       )}
 
-      {addProductModal.status && addProductModal.type === 'view' && 
-        <ViewProductDrawer 
-          visible={addProductModal.status} 
-          initData={editProduct} 
-          onClose={() => setAddProductModal({status: false, type: ''})}
+      {addProductModal.status && addProductModal.type === "view" && (
+        <ViewProductDrawer
+          visible={addProductModal.status}
+          initData={editProduct}
+          onClose={() => setAddProductModal({ status: false, type: "" })}
         />
-      }
+      )}
 
       <Stack
         flexWrap={"nowrap"}
@@ -501,7 +504,7 @@ export default function AdminProduct() {
             type="text"
             className="searchTerm"
             placeholder="Bạn muốn tìm kiếm sản phẩm gì?"
-            onChange={(event) => searchText.current = event.target.value}
+            onChange={(event) => (searchText.current = event.target.value)}
             onKeyUp={(event) => {
               if (event?.code === "Backspace") {
                 debounceSearch();
@@ -639,9 +642,13 @@ export default function AdminProduct() {
                                       product_price: row?.product_price,
                                       product_category: row?.product_category,
                                       category_name: listCategory?.find(
-                                        (it) => it?.category_id === row?.product_category
+                                        (it) =>
+                                          it?.category_id ===
+                                          row?.product_category
                                       )?.category_name,
-                                      create_at: row?.create_at
+                                      create_at: row?.create_at,
+                                      product_sale: row?.product_sale,
+                                      promo: row?.promo,
                                     });
                                   }}
                                 >
@@ -659,7 +666,13 @@ export default function AdminProduct() {
                                 {value}
                               </div>
                             ) : column.id === "product_image" ? (
-                              <img src={value} width={100} height={100} />
+                              <Image
+                                src={value}
+                                width={100}
+                                height={100}
+                                placeholder="blur"
+                                blurDataURL={BLUR_BASE64}
+                              />
                             ) : column.id === "product_name" ? (
                               <div style={{ fontWeight: 600, color: "blue" }}>
                                 {value}

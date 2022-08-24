@@ -25,7 +25,6 @@ export default function SwipeableTemporaryDrawer(props) {
     if (status === 0) {
       return (
         <Alert
-          badgeContent={4}
           color="error"
           icon={false}
           sx={{ cursor: "pointer" }}
@@ -36,7 +35,6 @@ export default function SwipeableTemporaryDrawer(props) {
     } else if (status === 1) {
       return (
         <Alert
-          badgeContent={4}
           color="success"
           icon={false}
           sx={{ cursor: "pointer" }}

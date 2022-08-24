@@ -10,9 +10,7 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
 import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
@@ -62,11 +60,6 @@ export default function ComponentAdminAccountRole(props) {
     noti: "",
     type: "",
   }); /*display noti in modal when add and update*/
-  const [openNotiSnackBar, setOpenNotiSnackBar] = useState({
-    status: false,
-    noti: "",
-    type: "",
-  });
   const [comfirmDelete, setComfirmDelete] = useState({
     status: false,
     columnId: "",
@@ -113,21 +106,10 @@ export default function ComponentAdminAccountRole(props) {
         });
 
         if (!addRes.data.success) {
-          setAddRoleNoti({
-            status: true,
-            noti: addRes.data.error.message,
-            type: "error",
-          });
           return false;
         }
-        setAddRoleNoti({
-          status: true,
-          noti: "Thêm quyền thành công",
-          type: "success",
-        });
         getAllRoleData();
         setOpenRoleModal({ status: false, type: "" });
-        setAddRoleNoti({ status: false, noti: "", type: "" });
         setNewRoleData({ name: "", role_function: "" });
         return true;
       }
@@ -140,7 +122,6 @@ export default function ComponentAdminAccountRole(props) {
 
   const handleUpdateRole = async () => {
     try {
-      setAddRoleNoti({ status: false, noti: "", type: "" });
       if (!newRoleData.name.length || !newRoleData.role_function.length) {
         setAddRoleNoti({
           status: true,
@@ -155,23 +136,11 @@ export default function ComponentAdminAccountRole(props) {
         });
 
         if (addRes.data && addRes.data.success) {
-          setAddRoleNoti({
-            status: true,
-            noti: "Sửa quyền thành công",
-            type: "success",
-          });
           getAllRoleData();
           setOpenRoleModal({ status: false, type: "" });
-          setAddRoleNoti({ status: false, noti: "", type: "" });
           setNewRoleData({ name: "", role_function: "" });
           return true;
-        } else {
-          setAddRoleNoti({
-            status: true,
-            noti: addRes.data.error.message,
-            type: "error",
-          });
-        }
+        } 
       }
       return false;
     } catch (error) {
@@ -419,25 +388,6 @@ export default function ComponentAdminAccountRole(props) {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-
-      <Snackbar
-        open={openNotiSnackBar.status}
-        autoHideDuration={6000}
-        onClose={() =>
-          setOpenNotiSnackBar({ ...openNotiSnackBar, status: false })
-        }
-        sx={{ marginLeft: "280px" }}
-      >
-        <Alert
-          onClose={() =>
-            setOpenNotiSnackBar({ ...openNotiSnackBar, status: false })
-          }
-          severity={openNotiSnackBar.type}
-          sx={{ width: "100%" }}
-        >
-          {openNotiSnackBar.noti}
-        </Alert>
-      </Snackbar>
     </div>
   );
 }

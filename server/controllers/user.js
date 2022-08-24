@@ -10,6 +10,7 @@ const {
   updateUserName,
   countTotalUser,
   updateUserAvatar,
+  updateUserInfo,
 } = require("../models/user");
 
 module.exports = {
@@ -75,6 +76,13 @@ module.exports = {
     const { userId } = req.params;
     const {avatar} = req.body
     const updateRes = await updateUserAvatar(avatar, userId)
+    res.send({ success: updateRes });
+  }),
+
+  updateUserInfo: asyncHandler(async (req, res) => {
+    const {userId} = req?.params
+    const {email, first_name, last_name, address, phone_number} = req?.body
+    const updateRes = await updateUserInfo(userId, email, first_name, last_name, address, phone_number)
     res.send({ success: updateRes });
   })
 };

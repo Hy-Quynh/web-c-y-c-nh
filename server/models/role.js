@@ -66,5 +66,14 @@ module.exports = {
     }catch (error) {
       return {};
     }
-  }
+  },
+
+  getRoleByAdminId: async(adminId) => {
+    try{
+      const role = await postgresql.query(`SELECT r.* FROM admin ad JOIN account_role r ON ad.role_id = r.role_id WHERE ad.admin_id='${adminId}'`)
+      return role?.rows?.length ? role?.rows?.[0] : {}
+    }catch (error) {
+      return {};
+    }
+  },
 }

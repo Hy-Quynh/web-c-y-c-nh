@@ -1,36 +1,272 @@
 const asyncHandler = require("express-async-handler");
-const { getProductList, createNewProduct, getProductById, updateProductData, deleteProductData } = require("../models/product");
+const { productMiddleware } = require("../middlewares/product");
+const {
+  getProductList,
+  createNewProduct,
+  getProductById,
+  updateProductData,
+  deleteProductData,
+  getTotalProduct,
+  getReviewByProductId,
+  getTotalReviewByProductId,
+  createNewReview,
+  changeReviewStatus,
+  getAllReview,
+  createCartData,
+  getAllCheckoutProduct,
+  deleteCheckoutById,
+  changeCheckoutStatus,
+  getCheckoutById,
+  getCheckoutByUserId,
+  getPromoList,
+  deletePromoData,
+  updatePromoData,
+  getProductPromo,
+  getPromoFreeProduct,
+} = require("../models/product");
+const moment = require("moment");
 
 module.exports = {
   getAllProduct: asyncHandler(async (req, res) => {
-    const {search, limit, offset} = req?.query
-    const response = await getProductList(search, limit, offset)
-    res.send({ success: true, payload: response });
+    const { search, category, limit, offset, minPrice, maxPrice } = req?.query;
+    const response = await getProductList(
+      search,
+      category,
+      limit,
+      offset,
+      minPrice,
+      maxPrice
+    );
+    const newProduct = [];
+
+    for (let i = 0; i < response?.length; i++) {
+      const promo = await getProductPromo(response[i]?.product_id);
+      let product_sale = response?.[i]?.product_price;
+      const newPromo = promo?.filter((item) => {
+        if (
+          moment(item?.promo_start).isSameOrBefore(moment(), 'day') &&
+          moment(item?.promo_end).isSameOrAfter(moment(), 'day')
+        ) {
+          return true;
+        }
+      });
+
+      for (let j = 0; j < newPromo?.length; j++) {
+        if (newPromo?.[j]?.promo_rule !== "DISCOUNT") {
+          freeProduct = await getPromoFreeProduct(newPromo?.[j]?.promo_id);
+          newPromo[j].free_product = freeProduct;
+        } else {
+          if (newPromo?.[j]?.rule_type === "MONEY") {
+            product_sale = product_sale - newPromo?.[j]?.rule_value;
+          } else {
+            product_sale =
+              product_sale -
+              response?.[i]?.product_price * (newPromo?.[j]?.rule_value / 100);
+          }
+        }
+      }
+      newProduct?.push({
+        ...response?.[i],
+        product_sale,
+        promo: [...newPromo],
+      });
+    }
+
+    const totalProduct = await getTotalProduct(
+      search,
+      category,
+      minPrice,
+      maxPrice
+    );
+
+    res.send({
+      success: true,
+      payload: { product: newProduct, total: totalProduct },
+    });
   }),
 
   getProductById: asyncHandler(async (req, res) => {
-    const {productId} = req?.params
-    const response = await getProductById(productId)
-    res.send({ success: true, payload: response });
+    const { productId } = req?.params;
+    const response = await getProductById(productId);
+    const newProduct = { ...response };
+
+    const promo = await getProductPromo(response?.product_id);
+    let product_sale = response?.product_price;
+
+    const newPromo = promo?.filter((item) => {
+      if (
+        moment(item?.promo_start).isSameOrBefore(moment(), 'day') &&
+        moment(item?.promo_end).isSameOrAfter(moment(), 'day')
+      ) {
+        return true;
+      }
+    });
+
+    for (let j = 0; j < newPromo?.length; j++) {
+      if (newPromo?.[j]?.promo_rule !== "DISCOUNT") {
+        freeProduct = await getPromoFreeProduct(newPromo?.[j]?.promo_id);
+        newPromo[j].free_product = freeProduct;
+      } else {
+        if (newPromo?.[j]?.rule_type === "MONEY") {
+          product_sale = product_sale - newPromo?.[j]?.rule_value;
+        } else {
+          product_sale =
+            product_sale -
+            response?.product_price * (newPromo?.[j]?.rule_value / 100);
+        }
+      }
+    }
+    newProduct.product_sale = product_sale;
+    newProduct.promo = [...newPromo];
+    res.send({ success: true, payload: newProduct });
   }),
 
   createNewProduct: asyncHandler(async (req, res) => {
-    const {productData} = req?.body
-    const {product_name, product_description, product_image, product_price, product_category} = productData
-    const response = await createNewProduct(product_name, product_description, product_image, product_price, product_category)
+    const { productData } = req?.body;
+    const {
+      product_name,
+      product_description,
+      product_image,
+      product_price,
+      product_category,
+    } = productData;
+    const response = await createNewProduct(
+      product_name,
+      product_description,
+      product_image,
+      product_price,
+      product_category
+    );
     res.send({ success: true, payload: response });
   }),
 
   updateProductData: asyncHandler(async (req, res) => {
-    const {productData} = req?.body
-    const {productId} = req?.params
-    const response = await updateProductData(productData, productId)
+    const { productData } = req?.body;
+    const { productId } = req?.params;
+    const response = await updateProductData(productData, productId);
     res.send({ success: response });
   }),
 
   deleteProductData: asyncHandler(async (req, res) => {
-    const {productId} = req?.params
-    const response = await deleteProductData(productId)
+    const { productId } = req?.params;
+    const response = await deleteProductData(productId);
     res.send({ success: response });
-  })
-}
+  }),
+
+  getReviewByProductId: asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+    const { limit, page } = req.query;
+    const response = await getReviewByProductId(productId, limit, page);
+    const total = await getTotalReviewByProductId(productId);
+    res.send({ success: true, payload: { review: response, total: total } });
+  }),
+
+  createNewReview: asyncHandler(async (req, res) => {
+    const { user_id, review, product_id } = req.body;
+    const response = await createNewReview(user_id, review, product_id);
+    res.send({ success: response });
+  }),
+
+  changeReviewStatus: asyncHandler(async (req, res) => {
+    const { reviewId } = req.params;
+    const { status } = req.body;
+    const response = await changeReviewStatus(reviewId, status);
+    res.send({ success: response });
+  }),
+
+  getAllReview: asyncHandler(async (req, res) => {
+    const response = await getAllReview();
+    res.send({ success: true, payload: response });
+  }),
+
+  checkoutCart: asyncHandler(async (req, res) => {
+    const { cartData, totalPrice, paymentMethod, userInfo } = req.body;
+    const response = await createCartData(
+      cartData,
+      totalPrice,
+      paymentMethod,
+      userInfo
+    );
+    res.send({ success: response });
+  }),
+
+  getListCheckout: asyncHandler(async (req, res) => {
+    const { fromData, toDate, limit, offset } = req?.query;
+    const response = await getAllCheckoutProduct(
+      fromData,
+      toDate,
+      limit,
+      offset
+    );
+    res.send({ success: true, payload: response });
+  }),
+
+  deleteCheckoutById: asyncHandler(async (req, res) => {
+    const { checkoutId } = req?.params;
+    const response = await deleteCheckoutById(checkoutId);
+    res.send({ success: response });
+  }),
+
+  changeCheckoutStatus: asyncHandler(async (req, res) => {
+    const { checkoutId } = req?.params;
+    const { status } = req?.body;
+    const response = await changeCheckoutStatus(checkoutId, status);
+    res.send({ success: response });
+  }),
+
+  getCheckoutById: asyncHandler(async (req, res) => {
+    const { checkoutId } = req?.params;
+    const response = await getCheckoutById(checkoutId);
+    res.send({ success: true, payload: response });
+  }),
+
+  getCheckoutByUserId: asyncHandler(async (req, res) => {
+    const { userId } = req?.params;
+    const response = await getCheckoutByUserId(userId);
+    res.send({ success: true, payload: response });
+  }),
+
+  createNewPromo: asyncHandler(async (req, res) => {
+    const { promoData, discountRule, listFreeProduct, listPromoProduct } =
+      req?.body;
+
+    const response = await productMiddleware.createNewProductPromoData(
+      promoData,
+      discountRule,
+      listFreeProduct,
+      listPromoProduct
+    );
+    res.send({ success: response });
+  }),
+
+  updatePromoData: asyncHandler(async (req, res) => {
+    const { promoId } = req?.params;
+    const { promoData, discountRule, listFreeProduct, listPromoProduct } =
+      req?.body;
+    const response = await updatePromoData(
+      promoData,
+      discountRule,
+      listFreeProduct,
+      listPromoProduct,
+      promoId
+    );
+    res.send({ success: response });
+  }),
+
+  getPromoList: asyncHandler(async (req, res) => {
+    const response = await getPromoList();
+    res.send({ success: true, payload: response });
+  }),
+
+  deletePromoData: asyncHandler(async (req, res) => {
+    const { promoId } = req?.params;
+    const response = await deletePromoData(promoId);
+    res.send({ success: response });
+  }),
+
+  getPromoById: asyncHandler(async (req, res) => {
+    const { promoId } = req?.params;
+    const response = await productMiddleware.getPromoById(promoId);
+    res.send(response);
+  }),
+};

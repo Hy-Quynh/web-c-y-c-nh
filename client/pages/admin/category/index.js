@@ -25,7 +25,14 @@ import { hasSpecicalCharacter } from "../../../utils/common";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import CustomInput from "../../../components/CustomInput";
 import CustomDialog from "../../../components/CustomDialog";
-import { getAllCategory, createNewCategory, updateCategoryData, deleteCategory } from "../../../services/category";
+import {
+  getAllCategory,
+  createNewCategory,
+  updateCategoryData,
+  deleteCategory,
+} from "../../../services/category";
+import Image from "next/image";
+import { BLUR_BASE64 } from "../../../utils/constants";
 
 const columns = [
   { id: "category_id", label: "Mã", minWidth: 150, align: "center" },
@@ -447,7 +454,13 @@ export default function ProductCategory() {
                                 {value}
                               </div>
                             ) : column.id === "category_image" ? (
-                              <img src={value} width={100} height={100} />
+                              <Image
+                                src={value}
+                                width={100}
+                                height={100}
+                                placeholder="blur"
+                                blurDataURL={BLUR_BASE64}
+                              />
                             ) : column.id === "category_name" ? (
                               <div style={{ fontWeight: 600 }}>{value}</div>
                             ) : column.id === "category_description" ? (

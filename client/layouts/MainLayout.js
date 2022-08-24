@@ -5,16 +5,18 @@ import AdminLayout from "./AdminLayout";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/router";
+import UserLayout from "./UserLayout";
 
 const LOSE_TOAST_TIME = 2000;
 
 export default function MainLayout(props) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-      setMounted(true)
-  }, [])
 
-  const router = useRouter()
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const router = useRouter();
   const userInfo =
     typeof window !== "undefined"
       ? parseJSON(localStorage.getItem(USER_INFO_KEY))
@@ -22,10 +24,17 @@ export default function MainLayout(props) {
 
   return (
     <>
-      {mounted && router?.asPath?.indexOf('admin') >= 0 && userInfo?.type === "admin" ? (
-        <AdminLayout>{props?.children}</AdminLayout>
+      {mounted ? (
+        router?.pathname?.indexOf("admin") >= 0 &&
+        userInfo?.type === "admin" ? (
+          <AdminLayout>{props?.children}</AdminLayout>
+        ) : router?.pathname?.indexOf("login") < 0 && router?.pathname?.indexOf("signup") < 0  ? (
+          <UserLayout>{props?.children}</UserLayout>
+        ) : (
+          <div>{props?.children}</div>
+        )
       ) : (
-        <div>{props?.children}</div>
+        <></>
       )}
       <ToastContainer
         position="top-center"

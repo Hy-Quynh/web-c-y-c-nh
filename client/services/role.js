@@ -36,3 +36,10 @@ export async function getRoleByName(role) {
     method: 'GET'
   })
 }
+
+export async function getRoleByAdminId(adminId) {
+  return request({
+    url: `/role/admin/${adminId}`,
+    method: 'GET'
+  })
+}

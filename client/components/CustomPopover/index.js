@@ -17,6 +17,7 @@ export default function CustomPopover(props) {
             width: width ? width : "220px",
             borderRadius: "8px",
             border: "gray 0.5px solid",
+            zIndex: 50
           }}
         >
           <div style={{ textAlign: "center" }}>

@@ -1,4 +1,5 @@
 import moment from "moment";
+import { USER_CART_INFO } from "./constants";
 
 const hasNumber = (string) => {
   return /\d/.test(string);
@@ -37,6 +38,26 @@ const parseJSON = (inputString, fallback) => {
   }
 };
 
+const addProductToCart = (cardData) => {
+  const currCart =
+    typeof window !== "undefined" && localStorage.getItem(USER_CART_INFO)
+      ? parseJSON(localStorage.getItem(USER_CART_INFO))
+      : [];
+
+  if (currCart?.length) {
+    const findPrd = currCart?.findIndex(
+      (item) => item?.product_id === cardData?.product_id
+    );
+    if (findPrd >= 0) {
+      currCart[findPrd].quantity =
+        Number(currCart[findPrd].quantity) + Number(cardData?.quantity);
+      return localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+    }
+  }
+  currCart?.push(cardData);
+  localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+};
+
 export {
   hasNumber,
   validateEmail,
@@ -44,4 +65,5 @@ export {
   hasSpecicalCharacter,
   dateTimeConverter,
   parseJSON,
+  addProductToCart,
 };

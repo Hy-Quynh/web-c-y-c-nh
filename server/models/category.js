@@ -5,7 +5,7 @@ module.exports = {
   getAllCategory: async (limit, offset) => {
     try {
       const limitOffset = getByLimitAndOffset(limit, offset);
-      const categoryData = await postgresql.query(`SELECT c.* FROM category c ${limitOffset}`);
+      const categoryData = await postgresql.query(`SELECT c.* FROM category c ORDER BY category_id DESC ${limitOffset}`);
       if (categoryData?.rows) {
         return categoryData?.rows;
       }
@@ -61,6 +61,9 @@ module.exports = {
 
   deleteCategoryData: async (categoryId) => {
     try {
+      await postgresql.query(
+        `DELETE FROM product WHERE product_category=${Number(categoryId)}`
+      );
       const deleteRes = await postgresql.query(
         `DELETE FROM category WHERE category_id=${Number(categoryId)}`
       );

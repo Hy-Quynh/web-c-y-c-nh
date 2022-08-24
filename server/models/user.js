@@ -34,16 +34,16 @@ module.exports = {
 
   getUserList: async (limit, offset) => {
     try {
-      const limitOffset = getByLimitAndOffset(limit, offset)
+      const limitOffset = getByLimitAndOffset(limit, offset);
       const userList = await postgresql.query(
         `SELECT ur.user_id, ur.first_name, ur.last_name, ur.email, ur.status, ur.created_day, ur.phone_number, ur.address
         FROM users ur  ORDER BY ur.user_id DESC ${limitOffset}`
       );
 
-      if ( userList?.rows ){
-        return userList?.rows
+      if (userList?.rows) {
+        return userList?.rows;
       }
-      return []
+      return [];
     } catch (error) {
       console.log("get user list error >>>> ", error);
       return [];
@@ -51,29 +51,30 @@ module.exports = {
   },
 
   countTotalUser: async () => {
-    try{
-      const count = await postgresql.query(`SELECT COUNT(user_id) as count_user FROM users`)
-      if ( count?.rows?.length ) return count?.rows[0]?.count_user;
+    try {
+      const count = await postgresql.query(
+        `SELECT COUNT(user_id) as count_user FROM users`
+      );
+      if (count?.rows?.length) return count?.rows[0]?.count_user;
       return 0;
-    }catch (error) {
+    } catch (error) {
       console.log("countTotalUser error >>>> ", error);
       return 0;
     }
   },
 
-  getUserById: async ( userId ) => {
-    try{
-      const userInfo =  await postgresql.query(
-        `SELECT ur.user_id, ur.first_name, ur.last_name, ur.email, ur.status, ur.created_day, ur.phone_number, ur.address, ur.score, ur.avatar,
-        (SELECT COUNT(question_id) FROM question q WHERE q.user_id = ur.user_id ) AS total_question
+  getUserById: async (userId) => {
+    try {
+      const userInfo = await postgresql.query(
+        `SELECT ur.user_id, ur.first_name, ur.last_name, ur.email, ur.status, ur.created_day, ur.phone_number, ur.address
         FROM users ur WHERE ur.user_id = ${Number(userId)}`
       );
 
-      if ( userInfo?.rows) return userInfo?.rows[0]
-      return {}
-    }catch (error) {
+      if (userInfo?.rows) return userInfo?.rows[0];
+      return {};
+    } catch (error) {
       console.log("getUserById error >>>> ", error);
-      return {}
+      return {};
     }
   },
 
@@ -83,10 +84,10 @@ module.exports = {
         `SELECT admin_id, first_name, last_name, email, status, created_day, phone_number, address, role_id FROM admin`
       );
 
-      if ( adminList?.rows ){
-        return adminList?.rows
+      if (adminList?.rows) {
+        return adminList?.rows;
       }
-      return []
+      return [];
     } catch (error) {
       console.log("get user list error >>>> ", error);
       return [];
@@ -99,10 +100,10 @@ module.exports = {
         `DELETE FROM users WHERE user_id=${Number(user_id)}`
       );
 
-      if ( deleteRes?.rows ){
-        return true
+      if (deleteRes?.rows) {
+        return true;
       }
-      return false
+      return false;
     } catch (error) {
       console.log("delete user info error >>>> ", error);
       return false;
@@ -115,10 +116,10 @@ module.exports = {
         `DELETE FROM admin WHERE admin_id=${Number(admin_id)}`
       );
 
-      if ( deleteRes?.rows ){
-        return true
+      if (deleteRes?.rows) {
+        return true;
       }
-      return false
+      return false;
     } catch (error) {
       console.log("delete admin info error >>>> ", error);
       return false;
@@ -128,13 +129,15 @@ module.exports = {
   updateUserStatus: async (user_id, status) => {
     try {
       const updateRes = await postgresql.query(
-        `UPDATE users SET status=${Number(status)} WHERE user_id=${Number(user_id)}`
+        `UPDATE users SET status=${Number(status)} WHERE user_id=${Number(
+          user_id
+        )}`
       );
 
-      if ( updateRes?.rows ){
-        return true
+      if (updateRes?.rows) {
+        return true;
       }
-      return false
+      return false;
     } catch (error) {
       console.log("update user info error >>>> ", error);
       return false;
@@ -144,13 +147,15 @@ module.exports = {
   updateAdminStatus: async (admin_id, status) => {
     try {
       const updateRes = await postgresql.query(
-        `UPDATE admin SET status=${Number(status)} WHERE admin_id=${Number(admin_id)}`
+        `UPDATE admin SET status=${Number(status)} WHERE admin_id=${Number(
+          admin_id
+        )}`
       );
 
-      if ( updateRes?.rows ){
-        return true
+      if (updateRes?.rows) {
+        return true;
       }
-      return false
+      return false;
     } catch (error) {
       console.log("update admin info error >>>> ", error);
       return false;
@@ -181,25 +186,53 @@ module.exports = {
     }
   },
 
-  updateUserName: async(first_name, last_name, userId) => {
-    try{
-      const updateRes = await postgresql.query(`UPDATE users SET first_name='${first_name}', last_name='${last_name}' WHERE user_id=${Number(userId)}` )
-      if ( updateRes?.rows ) return true
-      return false
-    }catch (error) {
+  updateUserName: async (first_name, last_name, userId) => {
+    try {
+      const updateRes = await postgresql.query(
+        `UPDATE users SET first_name='${first_name}', last_name='${last_name}' WHERE user_id=${Number(
+          userId
+        )}`
+      );
+      if (updateRes?.rows) return true;
+      return false;
+    } catch (error) {
       console.log("updateUserName error >>>> ", error);
       return false;
     }
   },
 
-  updateUserAvatar: async(avatar, userId) => {
-    try{
-      const updateRes = await postgresql.query(`UPDATE users SET avatar='${avatar}' WHERE user_id=${Number(userId)}` )
-      if ( updateRes?.rows ) return true
-      return false
-    }catch (error) {
+  updateUserAvatar: async (avatar, userId) => {
+    try {
+      const updateRes = await postgresql.query(
+        `UPDATE users SET avatar='${avatar}' WHERE user_id=${Number(userId)}`
+      );
+      if (updateRes?.rows) return true;
+      return false;
+    } catch (error) {
       console.log("updateUserAvatar error >>>> ", error);
       return false;
     }
-  }
+  },
+
+  updateUserInfo: async (
+    id,
+    email,
+    first_name,
+    last_name,
+    address,
+    phone_number
+  ) => {
+    try {
+      const updateRes = await postgresql.query(
+        `UPDATE users SET first_name='${first_name}', last_name='${last_name}', address='${address}', phone_number='${phone_number}', email='${email}' WHERE user_id=${Number(
+          id
+        )}`
+      );
+      if (updateRes?.rows) return true;
+      return false;
+    } catch (error) {
+      console.log("updateUserInfo error >>>> ", error);
+      return false;
+    }
+  },
 };
