@@ -8,9 +8,8 @@ import { Typography } from "@mui/material";
 import style from "./style.module.scss";
 import { FORMAT_NUMBER } from "../../utils/constants";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import { useRouter } from "next/router";
 
-const PRODUCT_IN_PAGE = 2;
+const PRODUCT_IN_PAGE = 12;
 const MIN_PRICE = 1000;
 const MAX_PRICE = 10000000;
 
@@ -67,8 +66,13 @@ export default function Product() {
     const categoryList = await getAllCategory();
     const category = categoryList?.data?.payload?.category;
     if (category?.length) {
-      setListCategory(category);
-      setActiveCategory(category[0]?.category_id);
+      const allCategory = [...category];
+      allCategory?.unshift({
+        category_id: -1,
+        category_name: "Tất cả",
+      });
+      setListCategory(allCategory);
+      setActiveCategory(allCategory[0]?.category_id);
     }
   };
 
@@ -83,7 +87,7 @@ export default function Product() {
       search,
       PRODUCT_IN_PAGE,
       page,
-      categoryId,
+      categoryId === -1 ? undefined : categoryId,
       minPrice,
       maxPrice
     );
@@ -108,15 +112,13 @@ export default function Product() {
   }, []);
 
   React.useEffect(() => {
-    if (activeCategory > 0) {
-      getProductData(
-        activeCategory,
-        currentPage,
-        searchText.current,
-        priceSlider?.[0],
-        priceSlider?.[1]
-      );
-    }
+    getProductData(
+      activeCategory,
+      currentPage,
+      searchText.current,
+      priceSlider?.[0],
+      priceSlider?.[1]
+    );
   }, [activeCategory]);
 
   return (
@@ -126,7 +128,9 @@ export default function Product() {
         data-wow-delay="0.1s"
       >
         <div className="container">
-          <h1 className="display-3 mb-3 animated slideInDown">Trang sản phẩm</h1>
+          <h1 className="display-3 mb-3 animated slideInDown">
+            Trang sản phẩm
+          </h1>
           <nav aria-label="breadcrumb animated slideInDown">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
@@ -157,7 +161,8 @@ export default function Product() {
               >
                 <h1 className="display-5 mb-3">Sản phẩm</h1>
                 <p>
-                  Luôn cam kết mang đến những sản phẩm tốt và chất lượng nhất đến với bạn
+                  Luôn cam kết mang đến những sản phẩm tốt và chất lượng nhất
+                  đến với bạn
                 </p>
               </div>
             </div>
@@ -175,6 +180,7 @@ export default function Product() {
                       onClick={() => {
                         setActiveCategory(item?.category_id);
                       }}
+                      style={{ marginTop: "20px" }}
                     >
                       <a
                         className={`btn btn-outline-primary border-2 ${
@@ -305,7 +311,9 @@ export default function Product() {
                 }))}
               />
             ) : (
-              <div style={{textAlign: 'center'}}>Không có sản phẩm phù hợp</div>
+              <div style={{ textAlign: "center" }}>
+                Không có sản phẩm phù hợp
+              </div>
             )}
             {currentPage + 1 < totalPage ? (
               <div class="col-12 text-center mt-5">

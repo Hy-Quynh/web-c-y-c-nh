@@ -26,6 +26,7 @@ export default function ProductList({ dataSource }) {
               product_name={item?.product_name}
               product_image={item?.product_image}
               product_id={item?.product_id}
+              product_quantity={item?.product_quantity}
             />
           </div>
         );

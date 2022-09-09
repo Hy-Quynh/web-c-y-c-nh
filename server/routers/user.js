@@ -9,5 +9,6 @@ router.put('/status/:userId', userController.updateUserStatus);
 router.put('/:userId/name', userController.updateUserName);
 router.put('/:userId/avatar', userController.updateUserAvatar);
 router.put('/:userId', userController.updateUserInfo);
+router.put('/admin/:adminId/role', userController.updateAdminRole);
 
 module.exports = router;

@@ -8,7 +8,6 @@ import { useRouter } from "next/router";
 import UserLayout from "./UserLayout";
 
 const LOSE_TOAST_TIME = 2000;
-
 export default function MainLayout(props) {
   const [mounted, setMounted] = useState(false);
 
@@ -28,7 +27,8 @@ export default function MainLayout(props) {
         router?.pathname?.indexOf("admin") >= 0 &&
         userInfo?.type === "admin" ? (
           <AdminLayout>{props?.children}</AdminLayout>
-        ) : router?.pathname?.indexOf("login") < 0 && router?.pathname?.indexOf("signup") < 0  ? (
+        ) : router?.pathname?.indexOf("login") < 0 &&
+          router?.pathname?.indexOf("signup") < 0 ? (
           <UserLayout>{props?.children}</UserLayout>
         ) : (
           <div>{props?.children}</div>

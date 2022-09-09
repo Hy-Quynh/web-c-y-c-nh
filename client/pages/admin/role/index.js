@@ -26,6 +26,8 @@ import {
 import { ADMIN_ROLE } from "../../../utils/constants";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
+import { Tab, Tabs } from "@mui/material";
+import UserPermission from "../../../components/AdminRole/UserPermisstion";
 
 const columns = [
   { id: "id", label: "Id", minWidth: 100 },
@@ -64,6 +66,11 @@ export default function ComponentAdminAccountRole(props) {
     status: false,
     columnId: "",
   });
+  const [roleTab, setRoleTab] = React.useState(0);
+
+  const handleChangeRoleTab = (event, newValue) => {
+    setRoleTab(newValue);
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -140,7 +147,7 @@ export default function ComponentAdminAccountRole(props) {
           setOpenRoleModal({ status: false, type: "" });
           setNewRoleData({ name: "", role_function: "admin-dashboard" });
           return true;
-        } 
+        }
       }
       return false;
     } catch (error) {
@@ -208,7 +215,7 @@ export default function ComponentAdminAccountRole(props) {
                     key={`add-role-modal-${roleIndex}`}
                     control={
                       <Checkbox
-                        disabled={roleItem.value==='admin-dashboard'}
+                        disabled={roleItem.value === "admin-dashboard"}
                         checked={newRoleData.role_function
                           .split(",")
                           .includes(roleItem.value)}
@@ -244,151 +251,173 @@ export default function ComponentAdminAccountRole(props) {
           )}
         </CustomDialog>
       )}
+      <Tabs
+        value={roleTab}
+        onChange={handleChangeRoleTab}
+        aria-label="disabled tabs example"
+      >
+        <Tab label="Quản lí quyền" />
+        <Tab label="Phân quyền User" />
+      </Tabs>
+      {roleTab === 0 ? (
+        <div>
+          <Stack
+            flexDirection={"row"}
+            justifyContent={"space-between"}
+            sx={{ marginTop: "20px" }}
+          >
+            <Typography variant="h5" component="h2">
+              Phân quyền
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setOpenRoleModal({ status: true, type: "add" });
+                setNewRoleData({ name: "", role_function: "admin-dashboard" });
+              }}
+            >
+              Thêm mới
+            </Button>
+          </Stack>
+          <br />
 
-      <Stack flexDirection={"row"} justifyContent={"space-between"}>
-        <Typography variant="h5" component="h2">
-          Phân quyền
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => {
-            setOpenRoleModal({ status: true, type: "add" });
-            setNewRoleData({ name: "", role_function: "admin-dashboard" });
-          }}
-        >
-          Thêm mới
-        </Button>
-      </Stack>
-      <br />
-
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    align={column.align}
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    {column.label}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {allRoleData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  return (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={row.code}
-                    >
-                      {columns.map((column) => {
-                        const value = row[column.id];
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {column.id === "id" ? (
-                              page * 10 + (index + 1)
-                            ) : column.id === "action" ? (
-                              <Stack
-                                flexDirection={"row"}
-                                justifyContent="center"
-                              >
-                                <Button
-                                  sx={{
-                                    height: "30px",
-                                    padding: 0,
-                                    width: "fit-content",
-                                    minWidth: "30px",
-                                  }}
-                                  variant="text"
-                                  onClick={() => {
-                                    setNewRoleData({
-                                      role_id: row.role_id,
-                                      name: row.role_name,
-                                      role_function: row.role_function,
-                                    });
-                                    setOpenRoleModal({
-                                      status: true,
-                                      type: "update",
-                                    });
-                                  }}
-                                  disabled={
-                                    row.role_name === "user" ||
-                                    row.role_name === "admin"
-                                      ? true
-                                      : false
-                                  }
-                                >
-                                  <BorderColorIcon />
-                                </Button>
-                                <Button
-                                  sx={{
-                                    height: "30px",
-                                    padding: 0,
-                                    width: "fit-content",
-                                    minWidth: "30px",
-                                  }}
-                                  variant="text"
-                                  color="error"
-                                  onClick={() =>
-                                    setComfirmDelete({
-                                      status: true,
-                                      columnId: row.role_id,
-                                    })
-                                  }
-                                  disabled={
-                                    row.role_name === "user" ||
-                                    row.role_name === "admin"
-                                      ? true
-                                      : false
-                                  }
-                                >
-                                  <DeleteIcon />
-                                </Button>
-                              </Stack>
-                            ) : column.id === "role_function" ? (
-                              <ul>
-                                {row.role_function
-                                  .split(",")
-                                  .map((roleItem, roleIndex) => {
-                                    const getValueFromLabel = ADMIN_ROLE.find(
-                                      (item) => item.value === roleItem
-                                    );
-                                    if (getValueFromLabel) {
-                                      return <li>{getValueFromLabel.label}</li>;
-                                    } else {
-                                      return <li></li>;
-                                    }
-                                  })}
-                              </ul>
-                            ) : (
-                              value
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={allRoleData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <TableContainer sx={{ maxHeight: 440 }}>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        align={column.align}
+                        style={{ minWidth: column.minWidth }}
+                      >
+                        {column.label}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {allRoleData
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row, index) => {
+                      return (
+                        <TableRow
+                          hover
+                          role="checkbox"
+                          tabIndex={-1}
+                          key={row.code}
+                        >
+                          {columns.map((column) => {
+                            const value = row[column.id];
+                            return (
+                              <TableCell key={column.id} align={column.align}>
+                                {column.id === "id" ? (
+                                  page * 10 + (index + 1)
+                                ) : column.id === "action" ? (
+                                  <Stack
+                                    flexDirection={"row"}
+                                    justifyContent="center"
+                                  >
+                                    <Button
+                                      sx={{
+                                        height: "30px",
+                                        padding: 0,
+                                        width: "fit-content",
+                                        minWidth: "30px",
+                                      }}
+                                      variant="text"
+                                      onClick={() => {
+                                        setNewRoleData({
+                                          role_id: row.role_id,
+                                          name: row.role_name,
+                                          role_function: row.role_function,
+                                        });
+                                        setOpenRoleModal({
+                                          status: true,
+                                          type: "update",
+                                        });
+                                      }}
+                                      disabled={
+                                        row.role_name === "user" ||
+                                        row.role_name === "admin"
+                                          ? true
+                                          : false
+                                      }
+                                    >
+                                      <BorderColorIcon />
+                                    </Button>
+                                    <Button
+                                      sx={{
+                                        height: "30px",
+                                        padding: 0,
+                                        width: "fit-content",
+                                        minWidth: "30px",
+                                      }}
+                                      variant="text"
+                                      color="error"
+                                      onClick={() =>
+                                        setComfirmDelete({
+                                          status: true,
+                                          columnId: row.role_id,
+                                        })
+                                      }
+                                      disabled={
+                                        row.role_name === "user" ||
+                                        row.role_name === "admin"
+                                          ? true
+                                          : false
+                                      }
+                                    >
+                                      <DeleteIcon />
+                                    </Button>
+                                  </Stack>
+                                ) : column.id === "role_function" ? (
+                                  <ul>
+                                    {row.role_function
+                                      .split(",")
+                                      .map((roleItem, roleIndex) => {
+                                        const getValueFromLabel =
+                                          ADMIN_ROLE.find(
+                                            (item) => item.value === roleItem
+                                          );
+                                        if (getValueFromLabel) {
+                                          return (
+                                            <li>{getValueFromLabel.label}</li>
+                                          );
+                                        } else {
+                                          return <li></li>;
+                                        }
+                                      })}
+                                  </ul>
+                                ) : (
+                                  value
+                                )}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 100]}
+              component="div"
+              count={allRoleData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Paper>
+        </div>
+      ) : (
+        <div style={{ marginTop: "20px" }}>
+          <UserPermission />
+        </div>
+      )}
     </div>
   );
 }

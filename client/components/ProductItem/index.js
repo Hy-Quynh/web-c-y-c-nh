@@ -16,6 +16,7 @@ export default function ProductItem({
   product_price,
   product_image,
   product_id,
+  product_quantity
 }) {
   const router = useRouter();
   const userData =
@@ -25,7 +26,10 @@ export default function ProductItem({
 
   return (
     <div className="product-item">
-      <div className="position-relative bg-light overflow-hidden">
+      <div
+        className="position-relative bg-light overflow-hidden"
+        onClick={() => router?.push(`/product/${product_id}`)}
+      >
         <Image
           src={product_image}
           alt={product_name}
@@ -78,6 +82,13 @@ export default function ProductItem({
                   "Bạn cần đăng nhập để thực hiện chức năng này"
                 );
               }
+
+              if (Number(product_quantity) < 1) {
+                return toast.error(
+                  "Số lượng lớn hơn số lượng sản phẩm hiện có"
+                );
+              }
+
               addProductToCart({
                 product_id: product_id,
                 product_name: product_name,
@@ -90,7 +101,7 @@ export default function ProductItem({
             }}
           >
             <i className="fa fa-shopping-bag text-primary me-2" />
-            Thêm vào giỏ hàng
+            Thêm giỏ hàng
           </a>
         </small>
       </div>

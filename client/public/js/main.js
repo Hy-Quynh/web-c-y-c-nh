@@ -23,18 +23,18 @@ document.getElementsByTagName("head")[0].appendChild(script);
   // Fixed Navbar
   $(document).ready(function () {
     if ($(window).width() < 992) {
-        if ($(this).scrollTop() > 45) {
-          $(".fixed-top").addClass("bg-white shadow");
-        } else {
-          $(".fixed-top").removeClass("bg-white shadow");
-        }
+      if ($(this).scrollTop() > 45) {
+        $(".fixed-top").addClass("bg-white shadow");
       } else {
-        if ($(this).scrollTop() > 45) {
-          $(".fixed-top").addClass("bg-white shadow").css("top", -45);
-        } else {
-          $(".fixed-top").removeClass("bg-white shadow").css("top", 0);
-        }
+        $(".fixed-top").removeClass("bg-white shadow");
       }
+    } else {
+      if ($(this).scrollTop() > 45) {
+        $(".fixed-top").addClass("bg-white shadow").css("top", -45);
+      } else {
+        $(".fixed-top").removeClass("bg-white shadow").css("top", 0);
+      }
+    }
     $(window).scroll(function () {
       if ($(window).width() < 992) {
         if ($(this).scrollTop() > 45) {
@@ -66,7 +66,7 @@ document.getElementsByTagName("head")[0].appendChild(script);
     return false;
   });
 
-  if ($.isFunction("owlCarousel")) {
+  // if ($.isFunction("owlCarousel")) {
     // Testimonials carousel
     $(".testimonial-carousel").owlCarousel({
       autoplay: true,
@@ -92,5 +92,5 @@ document.getElementsByTagName("head")[0].appendChild(script);
         },
       },
     });
-  }
+  // }
 })(jQuery);

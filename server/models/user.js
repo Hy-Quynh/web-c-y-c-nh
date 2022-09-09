@@ -32,12 +32,16 @@ module.exports = {
     }
   },
 
-  getUserList: async (limit, offset) => {
+  getUserList: async (limit, offset, search) => {
     try {
       const limitOffset = getByLimitAndOffset(limit, offset);
       const userList = await postgresql.query(
         `SELECT ur.user_id, ur.first_name, ur.last_name, ur.email, ur.status, ur.created_day, ur.phone_number, ur.address
-        FROM users ur  ORDER BY ur.user_id DESC ${limitOffset}`
+        FROM users ur WHERE ${
+          search && search !== "undefined"
+            ? `ur.first_name LIKE '%${search}%' OR ur.last_name LIKE '%${search}%'`
+            : `ur.user_id != 0`
+        }  ORDER BY ur.user_id DESC ${limitOffset}`
       );
 
       if (userList?.rows) {
@@ -50,10 +54,14 @@ module.exports = {
     }
   },
 
-  countTotalUser: async () => {
+  countTotalUser: async (search) => {
     try {
       const count = await postgresql.query(
-        `SELECT COUNT(user_id) as count_user FROM users`
+        `SELECT COUNT(user_id) as count_user FROM users WHERE ${
+          search && search !== "undefined"
+            ? `users.first_name LIKE '%${search}%' OR users.last_name LIKE '%${search}%'`
+            : `users.user_id != 0`
+        }`
       );
       if (count?.rows?.length) return count?.rows[0]?.count_user;
       return 0;
@@ -78,10 +86,14 @@ module.exports = {
     }
   },
 
-  getAdminList: async () => {
+  getAdminList: async (search) => {
     try {
       const adminList = await postgresql.query(
-        `SELECT admin_id, first_name, last_name, email, status, created_day, phone_number, address, role_id FROM admin`
+        `SELECT admin_id, first_name, last_name, email, status, created_day, phone_number, address, role_id FROM admin WHERE ${
+          search && search !== "undefined"
+            ? `admin.first_name LIKE '%${search}%' OR admin.last_name LIKE '%${search}%'`
+            : `admin.admin_id != 0`
+        }`
       );
 
       if (adminList?.rows) {
@@ -232,6 +244,21 @@ module.exports = {
       return false;
     } catch (error) {
       console.log("updateUserInfo error >>>> ", error);
+      return false;
+    }
+  },
+
+  updateAdminRole: async (adminId, role) => {
+    try {
+      const updateRes = await postgresql.query(
+        `UPDATE admin SET role_id=${Number(role)} WHERE admin_id=${Number(
+          adminId
+        )}`
+      );
+      if (updateRes?.rows) return true;
+      return false;
+    } catch (error) {
+      console.log("updateAdminRole error >>>> ", error);
       return false;
     }
   },

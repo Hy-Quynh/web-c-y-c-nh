@@ -9,13 +9,17 @@ const {
   createBlogReview,
   getUserBlogFavourite,
   changeUserFavouriteBlog,
+  getTotalPost,
+  getAllRelativePost,
+  changeBlogView,
 } = require("../models/post");
 
 module.exports = {
   getAllPost: asyncHandler(async (req, res) => {
     const { limit, offset, search } = req.query;
     const postList = await getAllPost(limit, offset, search);
-    res.send({ success: true, payload: postList });
+    const totalPost = await getTotalPost(search);
+    res.send({ success: true, payload: { post: postList, total: totalPost } });
   }),
 
   getPostById: asyncHandler(async (req, res) => {
@@ -66,8 +70,21 @@ module.exports = {
 
   changeUserFavouriteBlog: asyncHandler(async (req, res) => {
     const { userId, blogId } = req.query;
-    const {status} = req.body
-    const changeRes = await changeUserFavouriteBlog(userId, blogId, status)
-    res.send({ success: changeRes }); 
+    const { status } = req.body;
+    const changeRes = await changeUserFavouriteBlog(userId, blogId, status);
+    res.send({ success: changeRes });
   }),
+
+  getAllRelativePost: asyncHandler(async (req, res) => {
+    const {limit, offset, existPost} = req?.query;
+    const response = await getAllRelativePost(limit, offset, existPost)
+    res.send({ success: true, payload: response});
+  }),
+
+  changeBlogView: asyncHandler(async (req, res) => {
+    const {view} = req?.body
+    const {postId} = req?.params
+    const response = await changeBlogView(postId, view)
+    res.send({success: response})
+  })
 };

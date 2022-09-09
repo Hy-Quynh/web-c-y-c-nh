@@ -12,9 +12,13 @@ import { getUserInfo, updateUserInfo } from "../../services/user";
 import { useRouter } from "next/router";
 import { isVietnamesePhoneNumber, parseJSON } from "../../utils/common";
 import { USER_INFO_KEY } from "../../utils/constants";
+import { Tab, Tabs } from "@mui/material";
+import AdminElectricityPayment from "../../components/AdminElectricityWater/ElectricityPayment";
+import AdminWaterPayment from "../../components/AdminElectricityWater/WaterPayment";
 
 export default function PersonalPage(props) {
   const [userInfo, setUserInfo] = useState({});
+  const [historyTab, setHistoryTab] = useState(0);
   const router = useRouter();
   const userData =
     typeof window !== "undefined"
@@ -35,7 +39,10 @@ export default function PersonalPage(props) {
 
   const handleUpdateUserInfo = async () => {
     try {
-      if (!isVietnamesePhoneNumber(userInfo?.phone_number)) {
+      if (
+        userInfo?.phone_number?.trim()?.length &&
+        !isVietnamesePhoneNumber(userInfo?.phone_number)
+      ) {
         return toast.error("Số diện thoại không đúng định dạng");
       }
 
@@ -71,29 +78,30 @@ export default function PersonalPage(props) {
   }, []);
 
   return (
-    <div style={{ marginTop: "180px" }}>
-      <section
-        className="inner_page_head"
-        style={{ background: "#3CB914", color: "white", padding: "30px 20px" }}
+    <div>
+      <div
+        className="container-fluid page-header wow fadeIn"
+        data-wow-delay="0.1s"
       >
-        <div className="container_fuild">
-          <div className="row">
-            <div className="col-md-12">
-              <div className="full">
-                <h3
-                  style={{
-                    color: "white",
-                    textAlign: "center",
-                    fontSize: "40px",
-                  }}
-                >
-                  Trang thông tin
-                </h3>
-              </div>
-            </div>
-          </div>
+        <div className="container">
+          <h1 className="display-3 mb-3 animated slideInDown">Trang cá nhân</h1>
+          <nav aria-label="breadcrumb animated slideInDown">
+            <ol className="breadcrumb mb-0">
+              <li className="breadcrumb-item">
+                <a className="text-body" href="/">
+                  Trang chủ
+                </a>
+              </li>
+              <li
+                className="breadcrumb-item text-dark active"
+                aria-current="page"
+              >
+                Trang cá nhân
+              </li>
+            </ol>
+          </nav>
         </div>
-      </section>
+      </div>
       <Box
         sx={{
           paddingLeft: "50px",
@@ -131,7 +139,7 @@ export default function PersonalPage(props) {
                     },
                   }}
                   onChange={(event) =>
-                    setEditUserData({
+                    setUserInfo({
                       ...userInfo,
                       first_name: event.target.value,
                     })
@@ -149,7 +157,7 @@ export default function PersonalPage(props) {
                     },
                   }}
                   onChange={(event) =>
-                    setEditUserData({
+                    setUserInfo({
                       ...userInfo,
                       last_name: event.target.value,
                     })
@@ -222,19 +230,69 @@ export default function PersonalPage(props) {
           </Grid>
           <Grid item xs={12} sm={1}></Grid>
           <Grid item xs={12} sm={7}>
-            <div>
-              <div
-                style={{
-                  textAlign: "center",
-                  fontSize: "24px",
-                  marginBottom: "12px",
-                  fontWeight: 700,
-                }}
-              >
-                LỊCH SỬ ĐẶT HÀNG
+            <Tabs
+              value={historyTab}
+              onChange={(event, newValue) => setHistoryTab(newValue)}
+              aria-label="disabled tabs example"
+            >
+              <Tab label="Lịch sử đặt hàng" />
+              <Tab label="Thanh toán điện" />
+              <Tab label="Thanh toán nước" />
+            </Tabs>
+
+            {historyTab === 0 ? (
+              <div style={{marginTop: '20px'}}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: "24px",
+                    marginBottom: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  LỊCH SỬ ĐẶT HÀNG
+                </div>
+                <UserCheckout />
               </div>
-              <UserCheckout />
-            </div>
+            ) : (
+              <></>
+            )}
+
+            {historyTab === 1 ? (
+              <div style={{marginTop: '20px'}}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: "24px",
+                    marginBottom: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  LỊCH SỬ THANH TOÁN TIỀN ĐIỆN
+                </div>
+                <AdminElectricityPayment userId={userData?.user_id}/>
+              </div>
+            ) : (
+              <></>
+            )}
+
+            {historyTab === 2 ? (
+              <div style={{marginTop: '20px'}}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: "24px",
+                    marginBottom: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  LỊCH SỬ THANH TOÁN TIỀN NƯỚC
+                </div>
+                <AdminWaterPayment userId={userData?.user_id}/>
+              </div>
+            ) : (
+              <></>
+            )}
           </Grid>
         </Grid>
       </Box>

@@ -51,6 +51,10 @@ const controls = [
   "italic",
   "underline",
   "separator",
+  "text-indent",
+  "text-align",
+  "list-ul",
+  "list-ol",
   "link",
   "separator",
   "media",
@@ -107,6 +111,7 @@ export default function AdminProduct() {
     product_price: 0,
     product_category: -1,
     product_id: -1,
+    product_quantity: -1
   });
   const [editProductError, setEditProductError] = useState({
     status: false,
@@ -173,6 +178,7 @@ export default function AdminProduct() {
       product_image,
       product_price,
       product_category,
+      product_quantity
     } = editProduct;
     if (
       product_name.trim().length <= 0 ||
@@ -195,15 +201,23 @@ export default function AdminProduct() {
       });
       return false;
     }
-    if (product_name.length <= 3) {
+    if (Number(product_quantity) <= 0) {
       setEditProductError({
         status: true,
         type: "error",
-        message: "Tên phải nhiều hơn 3 kí tự",
+        message: "Số lượng sản phẩm cần lớn hơn 0",
       });
       return false;
     }
-    if (product_description.length <= 10) {
+    if (product_name?.trim()?.length <= 1) {
+      setEditProductError({
+        status: true,
+        type: "error",
+        message: "Tên phải nhiều hơn 1 kí tự",
+      });
+      return false;
+    }
+    if (product_description?.trim()?.length <= 10) {
       setEditProductError({
         status: true,
         type: "error",
@@ -314,7 +328,7 @@ export default function AdminProduct() {
   };
 
   const validateFn = (file) => {
-    let fileSizeError = "File Should be less than 500 kb";
+    let fileSizeError = "File tải lên không thể hơn 500 kb";
 
     if (file.size > maxFileSize) {
       toast.warn(fileSizeError);
@@ -405,6 +419,20 @@ export default function AdminProduct() {
               })
             }
           />
+          <CustomInput
+            label="Số lượng sản phẩm"
+            defaultValue={editProduct?.product_quantity || 0}
+            type="number"
+            id="post-title"
+            variant="filled"
+            style={{ marginTop: 11, textAlign: "left" }}
+            onChange={(event) =>
+              setEditProduct({
+                ...editProduct,
+                product_quantity: event.target.value,
+              })
+            }
+          />
           {typeof window !== "undefined" && (
             <div className="editor-wrapper" style={{ marginTop: "20px" }}>
               <label style={{ marginBottom: "10px" }}>Mô tả sản phẩm: </label>
@@ -487,6 +515,7 @@ export default function AdminProduct() {
                 product_description: "",
                 product_image: "",
                 product_price: 0,
+                product_quantity: 0,
                 product_category: -1,
               });
               setEditProductError({ status: false, type: "", message: "" });
@@ -607,6 +636,7 @@ export default function AdminProduct() {
                                       product_id: row?.product_id,
                                       product_price: row?.product_price,
                                       product_category: row?.product_category,
+                                      product_quantity: row?.product_quantity
                                     });
                                     setBraftEditorValue(
                                       row?.product_description
@@ -641,6 +671,7 @@ export default function AdminProduct() {
                                       product_id: row?.product_id,
                                       product_price: row?.product_price,
                                       product_category: row?.product_category,
+                                      product_quantity: row?.product_quantity,
                                       category_name: listCategory?.find(
                                         (it) =>
                                           it?.category_id ===

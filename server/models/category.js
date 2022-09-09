@@ -11,7 +11,7 @@ module.exports = {
       }
       return [];
     } catch (error) {
-      console.log("getAllCategory >>>> ", error);
+      console.log("getAllCategory error >>>> ", error);
       return [];
     }
   },

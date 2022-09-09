@@ -11,21 +11,21 @@ const {
   countTotalUser,
   updateUserAvatar,
   updateUserInfo,
+  updateAdminRole,
 } = require("../models/user");
 
 module.exports = {
   getUserList: asyncHandler(async (req, res) => {
-    const { type, limit, offset, sort } = req.query;
+    const { type, limit, offset, sort, search } = req.query;
     let listData = [];
-
     if (type === 'user') {
-      listData = await getUserList(limit, offset, sort);
-      const totalUser = await countTotalUser();
+      listData = await getUserList(limit, offset, search);
+      const totalUser = await countTotalUser(search);
       res.send({ success: true, payload: {user: listData, total: totalUser} });
     }
 
     if (type === 'admin') {
-      listData = await getAdminList(limit, offset, sort);
+      listData = await getAdminList(search, limit, offset);
       res.send({ success: true, payload: {user: listData} });
     }
     
@@ -84,5 +84,12 @@ module.exports = {
     const {email, first_name, last_name, address, phone_number} = req?.body
     const updateRes = await updateUserInfo(userId, email, first_name, last_name, address, phone_number)
     res.send({ success: updateRes });
-  })
+  }),
+
+  updateAdminRole: asyncHandler(async (req, res) => {
+    const {adminId} = req?.params
+    const {role} = req?.body
+    const updateRes = await updateAdminRole(adminId, role)
+    res.send({ success: updateRes });
+  }),
 };

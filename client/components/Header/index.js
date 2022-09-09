@@ -19,7 +19,7 @@ export default function Header() {
         <div className="col-lg-6 px-5 text-start">
           <small>
             <i className="fa fa-map-marker-alt me-2" />
-            123 Street, New York, USA
+            Trường Đại học Bách Khoa Hà Nội
           </small>
           <small className="ms-4">
             <i className="fa fa-envelope me-2" />
@@ -27,7 +27,7 @@ export default function Header() {
           </small>
         </div>
         <div className="col-lg-6 px-5 text-end">
-          <small>Follow us:</small>
+          <small>Theo dõi chúng tôi tại:</small>
           <a className="text-body ms-3" href>
             <i className="fab fa-facebook-f" />
           </a>
@@ -64,11 +64,11 @@ export default function Header() {
             <a href="/" className="nav-item nav-link active">
               Trang chủ
             </a>
-            <a href="/about" className="nav-item nav-link">
-              Về chúng tôi
-            </a>
             <a href="/product" className="nav-item nav-link">
               Sản phẩm
+            </a>
+            <a href="/post" className="nav-item nav-link">
+              Bài viết
             </a>
             <div className="nav-item dropdown">
               <a
@@ -79,19 +79,33 @@ export default function Header() {
                 Dịch vụ
               </a>
               <div className="dropdown-menu m-0">
-                <a className="dropdown-item" style={{ cursor: "pointer" }}>
+                <a
+                  className="dropdown-item"
+                  style={{ cursor: "pointer" }}
+                  href="/electricity-water-payment"
+                >
                   Thanh toán điện nước
                 </a>
                 <a className="dropdown-item" style={{ cursor: "pointer" }}>
                   Live Stream
                 </a>
+                <a
+                  className="dropdown-item"
+                  style={{ cursor: "pointer" }}
+                  href="/cooking-recipe"
+                >
+                  Công thức nấu ăn
+                </a>
               </div>
             </div>
-            <a href="/contact" className="nav-item nav-link">
-              Trang liên hệ
+            <a href="/about" className="nav-item nav-link">
+              Về chúng tôi
             </a>
-            <a href="/contact" className="nav-item nav-link">
-              Q&A
+            <a href="/feedback" className="nav-item nav-link">
+              Góp ý
+            </a>
+            <a href="/faq" className="nav-item nav-link">
+              FAQ
             </a>
           </div>
           <div className="d-none d-lg-flex ms-2">

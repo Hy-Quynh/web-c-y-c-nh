@@ -27,19 +27,22 @@ import {
   getAllPostList,
   updatePostData,
 } from "../../../services/post";
-import styles from "./style.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
 import dynamic from "next/dynamic";
 import CustomDialog from "../../../components/CustomDialog";
 import Image from "next/image";
 import { BLUR_BASE64 } from "../../../utils/constants";
 
-const maxFileSize = 100000; //100 kb
+const maxFileSize = 500000; //500 kb
 const controls = [
   "bold",
   "italic",
   "underline",
   "separator",
+  "text-indent",
+  "text-align",
+  "list-ul",
+  "list-ol",
   "link",
   "separator",
   "media",
@@ -95,8 +98,8 @@ export default function AdminPost(props) {
   const getAllPostData = async (search) => {
     try {
       const getPostRes = await getAllPostList(undefined, undefined, search || '');
-      if (getPostRes.data && getPostRes.data.success) {
-        setAllPostData(getPostRes.data.payload);
+      if (getPostRes?.data?.success) {
+        setAllPostData(getPostRes?.data?.payload?.post);
       }
     } catch (error) {
       console.log("getAllPostData error: ", error);
@@ -243,7 +246,7 @@ export default function AdminPost(props) {
   };
 
   const validateFn = (file) => {
-    let fileSizeError = "File Should be less than 100 kb";
+    let fileSizeError = "File tải lên không thể quá 500 kb";
 
     if (file.size > maxFileSize) {
       toast.warn(fileSizeError);
@@ -310,7 +313,6 @@ export default function AdminPost(props) {
               />
             </div>
           )}
-
           <Box sx={{ margin: "10px 0" }}>
             <Typography variant="p" component="p">
               Hình ảnh:
@@ -355,7 +357,7 @@ export default function AdminPost(props) {
       </Stack>
       <br />
 
-      <div className={styles.homeSearchBar}>
+      <div className='homeSearchBar'>
         <div className="search">
           <input
             type="text"

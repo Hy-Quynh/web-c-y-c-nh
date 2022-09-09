@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
+  BLUR_BASE64,
   FORMAT_NUMBER,
   USER_CART_INFO,
   USER_INFO_KEY,
@@ -14,8 +15,11 @@ import {
 } from "../../utils/common";
 import CustomDialog from "../../components/CustomDialog";
 import CustomInput from "../../components/CustomInput";
-import { checkoutCart } from "../../services/product";
+import { checkoutCart, getProductQuantity } from "../../services/product";
 import _ from "lodash";
+import Image from "next/image";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
 const PAYMENT_METHOD = [
   { label: "Thanh toán khi nhận hàng", value: "COD" },
@@ -85,7 +89,9 @@ export default function CartPage() {
       setVisibleCheckoutModal(false);
       return true;
     }
-    return false;
+    if (checkoutResponse?.data?.message) {
+      toast.error(checkoutResponse?.data?.message);
+    }
   };
 
   const calculateTotalPrice = (lstProduct) => {
@@ -100,6 +106,24 @@ export default function CartPage() {
       }
     }, 0);
     return total || 0;
+  };
+
+  const changeProductQuantity = async (qlt, productId, type = "add") => {
+    if (type !== "remove") {
+      const currQuantity = await getProductQuantity(productId);
+      if (qlt > Number(currQuantity?.data?.payload)) {
+        return toast.error("Số lượng vượt quá số lượng hiện có");
+      }
+    }
+    const currCart = [...cartProduct];
+    const findIndex = currCart?.findIndex(
+      (item) => item?.product_id === productId
+    );
+    if (findIndex >= 0) {
+      currCart[findIndex].quantity = qlt;
+      setCartProduct(currCart);
+      localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+    }
   };
 
   return (
@@ -124,16 +148,26 @@ export default function CartPage() {
                 <td data-th="Product">
                   <div className="row">
                     <div className="col-sm-2 hidden-xs">
-                      <img
+                      <Image
                         src={cartItem?.product_image}
                         alt="..."
                         className="img-responsive"
                         width={50}
                         height={50}
+                        placeholder="blur"
+                        blurDataURL={BLUR_BASE64}
                       />
                     </div>
                     <div className="col-sm-10">
-                      <h5 className="nomargin">{cartItem?.product_name}</h5>
+                      <h5
+                        className="nomargin"
+                        style={{ cursor: "pointer", color: "#3CB914" }}
+                        onClick={() =>
+                          router?.push(`/product/${cartItem?.product_id}`)
+                        }
+                      >
+                        {cartItem?.product_name}
+                      </h5>
                     </div>
                   </div>
                 </td>
@@ -147,25 +181,53 @@ export default function CartPage() {
                     : ""}
                 </td>
                 <td data-th="Quantity">
-                  <input
-                    type="number"
-                    className="form-control text-center"
-                    value={cartItem?.quantity}
-                    onChange={(event) => {
-                      const currCart = [...cartProduct];
-                      const findIndex = currCart?.findIndex(
-                        (item) => item?.product_id === cartItem?.product_id
-                      );
-                      if (findIndex >= 0) {
-                        currCart[findIndex].quantity = event.target.value;
-                        setCartProduct(currCart);
-                        localStorage.setItem(
-                          USER_CART_INFO,
-                          JSON.stringify(currCart)
-                        );
-                      }
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
                     }}
-                  />
+                  >
+                    <div
+                      style={{
+                        padding: "5px",
+                        background: "#DC3545",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        if (cartItem?.quantity - 1 > 0) {
+                          changeProductQuantity(
+                            Number(cartItem?.quantity) - 1,
+                            cartItem?.product_id,
+                            "remove"
+                          );
+                        }
+                      }}
+                    >
+                      <RemoveIcon sx={{ color: "white" }} />
+                    </div>
+                    <input
+                      className="form-control text-center"
+                      value={cartItem?.quantity}
+                      disabled={true}
+                      style={{ border: "none" }}
+                    />
+                    <div
+                      style={{
+                        padding: "5px",
+                        background: "#3CB914",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        changeProductQuantity(
+                          Number(cartItem?.quantity) + 1,
+                          cartItem?.product_id
+                        );
+                      }}
+                    >
+                      <AddIcon sx={{ color: "white" }} />
+                    </div>
+                  </div>
                 </td>
                 <td data-th="Subtotal" className="text-center">
                   {FORMAT_NUMBER.format(
@@ -229,7 +291,12 @@ export default function CartPage() {
                   whiteSpace: "nowrap",
                   width: "fit-content",
                 }}
-                onClick={() => setVisibleCheckoutModal(true)}
+                onClick={() => {
+                  if (!cartProduct?.length) {
+                    return toast.error("Không có sản phẩm trong giỏ hàng");
+                  }
+                  setVisibleCheckoutModal(true);
+                }}
               >
                 <span>Thanh toán </span>
                 <span style={{ marginLeft: "20px" }}>

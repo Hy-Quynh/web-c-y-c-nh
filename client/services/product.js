@@ -21,6 +21,13 @@ export async function getProductById(productId) {
   });
 }
 
+export async function getProductQuantity(productId) {
+  return request({
+    method: "GET",
+    url: `/product/${productId}/quantity`,
+  });
+}
+
 export async function createNewProduct(productData) {
   return request({
     method: "POST",
@@ -59,6 +66,42 @@ export async function createCustomerReview({ user_id, review, product_id }) {
   });
 }
 
+export async function createChildrenReview({
+  review_id,
+  user_id,
+  review,
+  author_type,
+}) {
+  return request({
+    method: "POST",
+    url: `/product/review/children`,
+    body: { review_id, user_id, review, author_type },
+  });
+}
+
+export async function updateReviewChildrenStatus(childrenId, status) {
+  return request({
+    method: "PUT",
+    url: `/product/review/children/${childrenId}/status`,
+    body: { status },
+  });
+}
+
+export async function deleteReviewChildren(childrenId) {
+  return request({
+    method: "DELETE",
+    url: `/product/review/children/${childrenId}`,
+  });
+}
+
+export async function updateUserReviewChildren(childrenId, review) {
+  return request({
+    method: "PUT",
+    url: `/product/review/children/${childrenId}`,
+    body: { review },
+  });
+}
+
 export async function getAllReview() {
   return request({
     method: "GET",
@@ -71,6 +114,21 @@ export async function updateReviewStatus(reviewId, status) {
     method: "PUT",
     url: `/product/review/${reviewId}/status`,
     body: { status },
+  });
+}
+
+export async function deleteReviewData(reviewId) {
+  return request({
+    method: "DELETE",
+    url: `/product/review/${reviewId}`,
+  });
+}
+
+export async function updateUserReview(reviewId, review) {
+  return request({
+    method: "PUT",
+    url: `/product/review/${reviewId}`,
+    body: { review },
   });
 }
 
@@ -175,5 +233,12 @@ export async function getPromoById(promoId) {
   return request({
     method: "GET",
     url: `/product/promo/${promoId}`,
+  });
+}
+
+export async function checkUserPurchasedProduct(userId, productId) {
+  return request({
+    method: "GET",
+    url: `/product/purchase/${productId}/${userId}`,
   });
 }

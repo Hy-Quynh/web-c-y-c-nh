@@ -4,6 +4,7 @@ import { styled, alpha } from "@mui/material/styles";
 
 const RedditTextField = styled((props) => (
   <TextField
+    autoComplete="off"
     InputProps={{ disableUnderline: true }}
     {...props}
     sx={{ width: "100%" }}

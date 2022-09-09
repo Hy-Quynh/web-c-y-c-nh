@@ -3,15 +3,22 @@ import { useRouter } from "next/router";
 import ProductList from "../components/ProductList";
 import { getAllCategory } from "../services/category";
 import { getListProduct } from "../services/product";
+import { getAllPostList } from "../services/post";
+import { dateTimeConverter } from "../utils/common";
+
+const LIMIT_CATEGORY = 5;
+const LIMIT_PRODUCT = 12;
+const LIMIT_POST = 12;
 
 export default function HomePage() {
   const [listCategory, setListCategory] = React.useState([]);
   const [listProduct, setListProduct] = React.useState([]);
   const [activeCategory, setActiveCategory] = React.useState(0);
-  const router = useRouter();
+  const [listPost, setListPost] = React.useState([]);
+  const serviceRef = React.useRef(null);
 
   const getCategoryData = async () => {
-    const categoryList = await getAllCategory(5, 0);
+    const categoryList = await getAllCategory(LIMIT_CATEGORY, 0);
     const category = categoryList?.data?.payload?.category;
     if (category?.length) {
       setListCategory(category);
@@ -20,15 +27,23 @@ export default function HomePage() {
   };
 
   const getProductData = async (categoryId) => {
-    const productList = await getListProduct("", 12, 0, categoryId);
+    const productList = await getListProduct("", LIMIT_PRODUCT, 0, categoryId);
     const { product } = productList?.data?.payload;
-    if (product?.length) {
+    if (product) {
       setListProduct(product);
+    }
+  };
+
+  const getPostData = async () => {
+    const postList = await getAllPostList(LIMIT_POST, 0);
+    if (postList?.data?.success) {
+      setListPost(postList?.data?.payload?.post);
     }
   };
 
   React.useEffect(() => {
     getCategoryData();
+    getPostData();
   }, []);
 
   React.useEffect(() => {
@@ -56,17 +71,19 @@ export default function HomePage() {
                   <div className="row justify-content-start">
                     <div className="col-lg-7">
                       <h1 className="display-2 mb-5 animated slideInDown">
-                        Organic Food Is Good For Health
+                        Rau xanh nâng tầm sức khoẻ
                       </h1>
                       <a
-                        href
+                        href="/product"
                         className="btn btn-primary rounded-pill py-sm-3 px-sm-5"
+                        style={{ zIndex: 1000000 }}
                       >
                         Sản phẩm
                       </a>
                       <a
-                        href
+                        style={{ zIndex: 1000000 }}
                         className="btn btn-secondary rounded-pill py-sm-3 px-sm-5 ms-3"
+                        onClick={() => serviceRef.current.scrollIntoView()}
                       >
                         Dịch vụ
                       </a>
@@ -102,7 +119,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <button
+          {/* <button
             className="carousel-control-prev"
             type="button"
             data-bs-target="#header-carousel"
@@ -119,7 +136,7 @@ export default function HomePage() {
           >
             <span className="carousel-control-next-icon" aria-hidden="true" />
             <span className="visually-hidden">Next</span>
-          </button>
+          </button> */}
         </div>
       </div>
       {/* Carousel End */}
@@ -137,23 +154,34 @@ export default function HomePage() {
                 Trái cây và rau hữu cơ tốt nhất
               </h1>
               <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit.
-                Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit,
-                sed stet lorem sit clita duo justo magna dolore erat amet
+                Rau hữu cơ (Rau organic) là loại rau được trồng và sản xuất theo
+                phương pháp và tiêu chuẩn của nông nghiệp hữu cơ. Đây là một lựa
+                chọn hàng đầu cho người tiêu dùng, cung cấp các loại rau củ tươi
+                ngon. Rau hữu cơ cũng có hàm lượng dinh dưỡng cao với hương vị
+                tự nhiên, đảm bảo an toàn cho con người. Đồng thời rau hữu cơ
+                giúp đảm bảo hệ sinh thái và đa dạng sinh học.
+              </p>
+              <p className="mb-4">
+                Rau sẽ được trồng hoàn toàn tự nhiên, không sử dụng các chất độc
+                hại trong quá trình trồng trọt đến khâu thu hoạch và bảo quản.
+                Rau hữu cơ sẽ cần phải đáp ứng được các tiêu chí:
               </p>
               <p>
                 <i className="fa fa-check text-primary me-3" />
-                Tempor erat elitr rebum at clita
+                Không sử dụng chất biến đổi gen.
               </p>
               <p>
                 <i className="fa fa-check text-primary me-3" />
-                Aliqu diam amet diam et eos
+                Không phun thuốc diệt cỏ và trừ sâu.
               </p>
               <p>
                 <i className="fa fa-check text-primary me-3" />
-                Clita duo justo magna dolore erat amet
+                Không phun thuốc diệt cỏ và trừ sâu.
               </p>
-              <a className="btn btn-primary rounded-pill py-3 px-5 mt-3" href>
+              <a
+                className="btn btn-primary rounded-pill py-3 px-5 mt-3"
+                href="/about"
+              >
                 Xem thêm
               </a>
             </div>
@@ -161,8 +189,12 @@ export default function HomePage() {
         </div>
       </div>
       {/* About End */}
+
       {/* Feature Start */}
-      <div className="container-fluid bg-light bg-icon my-5 py-6">
+      <div
+        className="container-fluid bg-light bg-icon my-5 py-6"
+        ref={serviceRef}
+      >
         <div className="container">
           <div
             className="section-header text-center mx-auto mb-5 wow fadeInUp"
@@ -170,10 +202,7 @@ export default function HomePage() {
             style={{ maxWidth: "500px" }}
           >
             <h1 className="display-5 mb-3">Dịch vụ của chúng tôi</h1>
-            <p>
-              Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam
-              justo sed rebum vero dolor duo.
-            </p>
+            <p>Các dịch vụ tiện ích luôn sẵn sàng hỗ trợ bạn</p>
           </div>
           <div className="row g-4">
             <div
@@ -181,15 +210,20 @@ export default function HomePage() {
               data-wow-delay="0.1s"
             >
               <div className="bg-white text-center h-100 p-4 p-xl-5">
-                <img className="img-fluid mb-4" src="img/icon-1.png" alt="" />
-                <h4 className="mb-3">Natural Process</h4>
+                <img
+                  className="img-fluid mb-4"
+                  src="img/dien-nuoc.png"
+                  alt=""
+                  style={{ width: "280", height: "280px" }}
+                />
+                <h4 className="mb-3">Thanh toán điện nước</h4>
                 <p className="mb-4">
-                  Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum
-                  diam justo sed vero dolor duo.
+                  Bạn có thể dễ dàng thanh toán hoá đơn điện nước thông
+                  qua vài bước đơn giản
                 </p>
                 <a
                   className="btn btn-outline-primary border-2 py-2 px-4 rounded-pill"
-                  href
+                  href="/electricity-water-payment"
                 >
                   Xem thêm
                 </a>
@@ -200,15 +234,20 @@ export default function HomePage() {
               data-wow-delay="0.3s"
             >
               <div className="bg-white text-center h-100 p-4 p-xl-5">
-                <img className="img-fluid mb-4" src="img/icon-2.png" alt="" />
-                <h4 className="mb-3">Organic Products</h4>
+                <img
+                  className="img-fluid mb-4"
+                  src="img/live-stream.png"
+                  alt=""
+                  style={{ width: "280", height: "280px" }}
+                />
+                <h4 className="mb-3">LiveStream hàng hoá</h4>
                 <p className="mb-4">
-                  Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum
-                  diam justo sed vero dolor duo.
+                  Giới thiệu về các sản phẩm mới, giúp bạn hiểu hơn về sản phẩm
+                  của chúng tôi
                 </p>
                 <a
                   className="btn btn-outline-primary border-2 py-2 px-4 rounded-pill"
-                  href
+                  href="/livestream"
                 >
                   Xem thêm
                 </a>
@@ -219,11 +258,16 @@ export default function HomePage() {
               data-wow-delay="0.5s"
             >
               <div className="bg-white text-center h-100 p-4 p-xl-5">
-                <img className="img-fluid mb-4" src="img/icon-3.png" alt="" />
-                <h4 className="mb-3">Biologically Safe</h4>
+                <img
+                  className="img-fluid mb-4"
+                  src="img/nau-an.png"
+                  alt=""
+                  style={{ width: "280", height: "280px" }}
+                />
+                <h4 className="mb-3">Công thức nấu ăn</h4>
                 <p className="mb-4">
-                  Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum
-                  diam justo sed vero dolor duo.
+                  Những món ăn đặc sắc và hấp dẫn sẽ giúp bữa cơm hàng ngày của
+                  bạn thêm đa dạng
                 </p>
                 <a
                   className="btn btn-outline-primary border-2 py-2 px-4 rounded-pill"
@@ -237,6 +281,7 @@ export default function HomePage() {
         </div>
       </div>
       {/* Feature End */}
+
       {/* Product Start */}
       <div className="container-xxl py-5">
         <div className="container">
@@ -248,9 +293,7 @@ export default function HomePage() {
                 style={{ maxWidth: "500px" }}
               >
                 <h1 className="display-5 mb-3">Sản phẩm của tôi</h1>
-                <p>
-                  Luôn đảm bảo AN TOÀN - CHẤT LƯỢNG - SỨC KHOẺ cho bạn
-                </p>
+                <p>Luôn đảm bảo AN TOÀN - CHẤT LƯỢNG - SỨC KHOẺ cho bạn</p>
               </div>
             </div>
             <div
@@ -289,100 +332,7 @@ export default function HomePage() {
         </div>
       </div>
       {/* Product End */}
-      
-      {/* Testimonial Start */}
-      <div className="container-fluid bg-light bg-icon py-6 mb-5">
-        <div className="container">
-          <div
-            className="section-header text-center mx-auto mb-5 wow fadeInUp"
-            data-wow-delay="0.1s"
-            style={{ maxWidth: "500px" }}
-          >
-            <h1 className="display-5 mb-3">Đánh giá của khách hàng</h1>
-            <p>
-              Những đánh giá chân thật từ khách hàng sẽ giúp bạn có những lựa chọn tốt hơn
-            </p>
-          </div>
-          <div
-            className="owl-carousel testimonial-carousel wow fadeInUp"
-            data-wow-delay="0.1s"
-          >
-            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-              <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5" />
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-                amet diam et eos. Clita erat ipsum et lorem et sit.
-              </p>
-              <div className="d-flex align-items-center">
-                <img
-                  className="flex-shrink-0 rounded-circle"
-                  src="img/testimonial-1.jpg"
-                  alt=""
-                />
-                <div className="ms-3">
-                  <h5 className="mb-1">Client Name</h5>
-                  <span>Profession</span>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-              <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5" />
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-                amet diam et eos. Clita erat ipsum et lorem et sit.
-              </p>
-              <div className="d-flex align-items-center">
-                <img
-                  className="flex-shrink-0 rounded-circle"
-                  src="img/testimonial-2.jpg"
-                  alt=""
-                />
-                <div className="ms-3">
-                  <h5 className="mb-1">Client Name</h5>
-                  <span>Profession</span>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-              <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5" />
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-                amet diam et eos. Clita erat ipsum et lorem et sit.
-              </p>
-              <div className="d-flex align-items-center">
-                <img
-                  className="flex-shrink-0 rounded-circle"
-                  src="img/testimonial-3.jpg"
-                  alt=""
-                />
-                <div className="ms-3">
-                  <h5 className="mb-1">Client Name</h5>
-                  <span>Profession</span>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-              <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5" />
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-                amet diam et eos. Clita erat ipsum et lorem et sit.
-              </p>
-              <div className="d-flex align-items-center">
-                <img
-                  className="flex-shrink-0 rounded-circle"
-                  src="img/testimonial-4.jpg"
-                  alt=""
-                />
-                <div className="ms-3">
-                  <h5 className="mb-1">Client Name</h5>
-                  <span>Profession</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Testimonial End */}
+
       {/* Blog Start */}
       <div className="container-xxl py-5">
         <div className="container">
@@ -392,87 +342,50 @@ export default function HomePage() {
             style={{ maxWidth: "500px" }}
           >
             <h1 className="display-5 mb-3">Bài viết mới nhất</h1>
-            <p>
-              Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam
-              justo sed rebum vero dolor duo.
-            </p>
+            <p>Những bài viết hay, cung cấp kiến thức tuyệt vời dành cho bạn</p>
           </div>
           <div className="row g-4">
-            <div
-              className="col-lg-4 col-md-6 wow fadeInUp"
-              data-wow-delay="0.1s"
-            >
-              <img className="img-fluid" src="img/blog-1.jpg" alt="" />
-              <div className="bg-light p-4">
-                <a className="d-block h5 lh-base mb-4" href>
-                  How to cultivate organic fruits and vegetables in own firm
-                </a>
-                <div className="text-muted border-top pt-4">
-                  <small className="me-3">
-                    <i className="fa fa-user text-primary me-2" />
-                    Admin
-                  </small>
-                  <small className="me-3">
-                    <i className="fa fa-calendar text-primary me-2" />
-                    01 Jan, 2045
-                  </small>
+            {listPost?.map((postItem, postIndex) => {
+              return (
+                <div
+                  className="col-lg-4 col-md-6 wow fadeInUp"
+                  data-wow-delay="0.1s"
+                  key={`post-item-${postIndex}`}
+                >
+                  <img
+                    className="img-fluid"
+                    src={postItem?.blog_image}
+                    alt=""
+                    style={{ height: "250px", width: "100%" }}
+                  />
+                  <div className="bg-light p-4">
+                    <a
+                      className="d-block h5 lh-base mb-4"
+                      href={`/post/${postItem?.blog_id}`}
+                      style={{
+                        maxWidth: "100%",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {postItem?.blog_title}
+                    </a>
+                    <div className="text-muted border-top pt-4">
+                      <small className="me-3">
+                        <i className="fa fa-calendar text-primary me-2" />
+                        {dateTimeConverter(postItem?.create_at)}
+                      </small>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div
-              className="col-lg-4 col-md-6 wow fadeInUp"
-              data-wow-delay="0.3s"
-            >
-              <img className="img-fluid" src="img/blog-2.jpg" alt="" />
-              <div className="bg-light p-4">
-                <a className="d-block h5 lh-base mb-4" href>
-                  How to cultivate organic fruits and vegetables in own firm
-                </a>
-                <div className="text-muted border-top pt-4">
-                  <small className="me-3">
-                    <i className="fa fa-user text-primary me-2" />
-                    Admin
-                  </small>
-                  <small className="me-3">
-                    <i className="fa fa-calendar text-primary me-2" />
-                    01 Jan, 2045
-                  </small>
-                </div>
-              </div>
-            </div>
-            <div
-              className="col-lg-4 col-md-6 wow fadeInUp"
-              data-wow-delay="0.5s"
-            >
-              <img className="img-fluid" src="img/blog-3.jpg" alt="" />
-              <div className="bg-light p-4">
-                <a className="d-block h5 lh-base mb-4" href>
-                  How to cultivate organic fruits and vegetables in own firm
-                </a>
-                <div className="text-muted border-top pt-4">
-                  <small className="me-3">
-                    <i className="fa fa-user text-primary me-2" />
-                    Admin
-                  </small>
-                  <small className="me-3">
-                    <i className="fa fa-calendar text-primary me-2" />
-                    01 Jan, 2045
-                  </small>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
       {/* Blog End */}
-
-      {/* Back to Top */}
-      <a
-        href="#"
-        className="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"
-      >
-        <i className="bi bi-arrow-up" />
-      </a>
     </div>
   );
 }

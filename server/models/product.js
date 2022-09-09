@@ -16,7 +16,10 @@ module.exports = {
       const res = await postgresql.query(
         `SELECT * FROM product WHERE ${
           search && search !== "undefined"
-            ? `product_name LIKE '%${search}%'`
+            ? `lower(unaccent(product_name)) LIKE '%${search
+                ?.toLowerCase()
+                ?.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")}%'`
             : `product_name != ''`
         } AND ${
           category && category !== "undefined"
@@ -88,14 +91,17 @@ module.exports = {
     product_description,
     product_image,
     product_price,
-    product_category
+    product_category,
+    product_quantity
   ) => {
     try {
       const res =
         await postgresql.query(`INSERT INTO product(product_name, product_description, product_image, product_price, 
-        product_category, product_status, create_at) VALUES('${product_name}', '${product_description}', '${product_image}', ${Number(
+        product_category, product_status, create_at, product_quantity) VALUES('${product_name}', '${product_description}', '${product_image}', ${Number(
           product_price
-        )}, ${Number(product_category)}, 1, Now())`);
+        )}, ${Number(product_category)}, 1, Now(), ${Number(
+          product_quantity
+        )})`);
       return res?.rows ? true : false;
     } catch (error) {
       console.log("createNewProduct error >>>> ", error);
@@ -110,6 +116,7 @@ module.exports = {
       product_image,
       product_price,
       product_category,
+      product_quantity,
     },
     productId
   ) => {
@@ -118,6 +125,8 @@ module.exports = {
         await postgresql.query(`UPDATE product SET product_name='${product_name}', product_description='${product_description}', product_image='${product_image}',
       product_price=${Number(product_price)}, product_category=${Number(
           product_category
+        )}, product_quantity=${Number(
+          product_quantity
         )} WHERE product_id=${Number(productId)}`);
       return res?.rows ? true : false;
     } catch (error) {
@@ -147,7 +156,31 @@ module.exports = {
         )} ORDER BY review_date DESC ${limitOffset}`
       );
 
-      return reviewRes?.rows || [];
+      const reviewData = [...(reviewRes?.rows || [])];
+
+      for (let i = 0; i < reviewData?.length; i++) {
+        const userChildrenReview = await postgresql.query(
+          `SELECT prc.*,  ur.first_name, ur.last_name FROM product_review_children prc JOIN users ur ON prc.user_id = ur.user_id WHERE review_id=${Number(
+            reviewData?.[i]?.review_id
+          )} AND author_type != 'admin'`
+        );
+        const adminChildrenReview = await postgresql.query(
+          `SELECT prc.* FROM product_review_children prc WHERE review_id=${Number(
+            reviewData?.[i]?.review_id
+          )} AND author_type = 'admin'`
+        );
+        const allChildrenReview = (userChildrenReview?.rows || [])?.concat(
+          adminChildrenReview?.rows || []
+        );
+
+        allChildrenReview?.sort(function (x, y) {
+          return y.review_date - x.review_date;
+        });
+
+        reviewData[i].children_review = [...allChildrenReview];
+      }
+
+      return reviewData || [];
     } catch (error) {
       console.log("getReviewByProductId error >>>> ", error);
       return [];
@@ -212,8 +245,52 @@ module.exports = {
     }
   },
 
+  getProductQuantity: async (productId) => {
+    try {
+      const response = await postgresql.query(
+        `SELECT product_quantity FROM product WHERE product_id=${Number(
+          productId
+        )}`
+      );
+      if (response?.rows) {
+        return response?.rows?.[0]?.product_quantity;
+      }
+      return 0;
+    } catch (error) {
+      console.log("getProductQuantity error >>>> ", error);
+      return 0;
+    }
+  },
+
   createCartData: async (cartData, totalPrice, paymentMethod, userInfo) => {
     try {
+      let checkValid = true;
+      for (
+        let productIndex = 0;
+        productIndex < cartData?.length;
+        productIndex++
+      ) {
+        const quantity = await postgresql.query(
+          `SELECT product_quantity FROM product WHERE product_id=${Number(
+            cartData?.[productIndex]?.product_id
+          )}`
+        );
+        if (
+          quantity?.rows?.[0]?.product_quantity <
+          cartData?.[productIndex]?.quantity
+        ) {
+          checkValid = false;
+          break;
+        }
+      }
+
+      if (!checkValid) {
+        return {
+          success: false,
+          message: "Số lượng sản phẩm trong giỏ hàng vượt quá số lượng hiện có",
+        };
+      }
+
       const insertProduct =
         await postgresql.query(`INSERT INTO product_checkout(checkout_date, total_price, user_id, user_first_name, user_last_name, user_address, user_phone, user_email, status, payment_method)
       VALUES(Now(), ${Number(totalPrice)}, ${Number(userInfo?.user_id)}, '${
@@ -231,7 +308,7 @@ module.exports = {
         if (productInsert) {
           const { checkout_id } = productInsert?.rows[0];
           for (let i = 0; i < cartData?.length; i++) {
-            await postgresql.query(`INSERT INTO product_checkout_detail(checkout_id, product_id, product_name, product_price, product_sale, product_quanlity, proudct_image) VALUES 
+            await postgresql.query(`INSERT INTO product_checkout_detail(checkout_id, product_id, product_name, product_price, product_sale, product_quanlity, proudct_image) VALUES
             (${Number(checkout_id)}, ${Number(cartData[i]?.product_id)}, '${
               cartData[i]?.product_name
             }', ${Number(cartData[i]?.product_price)}, ${
@@ -244,13 +321,29 @@ module.exports = {
               cartData[i]?.product_image
             }')`);
           }
-          return true;
+
+          for (let i = 0; i < cartData?.length; i++) {
+            const quantity = await postgresql.query(
+              `SELECT product_quantity FROM product WHERE product_id=${Number(
+                cartData?.[i]?.product_id
+              )}`
+            );
+
+            await postgresql.query(
+              `UPDATE product SET product_quantity=${Number(
+                Number(quantity?.rows?.[0]?.product_quantity) -
+                  Number(cartData?.[i]?.quantity)
+              )} WHERE product_id=${Number(cartData?.[i]?.product_id)} `
+            );
+          }
+
+          return { success: true };
         }
       }
-      return false;
+      return { success: false, message: "Thêm sản phẩm vào giỏ hàng thất bại" };
     } catch (error) {
       console.log("createCartData error >>>> ", error);
-      return false;
+      return { success: false, message: "Thêm sản phẩm vào giỏ hàng thất bại" };
     }
   },
 
@@ -480,7 +573,9 @@ module.exports = {
 
   getPromoList: async () => {
     try {
-      const list = await postgresql.query(`SELECT * FROM product_promo ORDER BY promo_id DESC`);
+      const list = await postgresql.query(
+        `SELECT * FROM product_promo ORDER BY promo_id DESC`
+      );
       return list?.rows || [];
     } catch (error) {
       console.log("getPromoList error >>>> ", error);
@@ -556,6 +651,108 @@ module.exports = {
     } catch (error) {
       console.log("getProductPromo error >>>> ", error);
       return [];
+    }
+  },
+
+  checkUserProductPurchase: async (productId, userId) => {
+    try {
+      const response = await postgresql.query(
+        `SELECT pcd.product_id FROM product_checkout_detail pcd JOIN product_checkout pc ON pcd.checkout_id = pc.checkout_id WHERE pc.user_id=${Number(
+          userId
+        )} AND pcd.product_id=${Number(productId)}`
+      );
+      return response?.rows?.length ? true : false;
+    } catch (error) {
+      console.log("checkUserProductPurchase error >>>> ", error);
+      return false;
+    }
+  },
+
+  deleteReviewData: async (reviewId) => {
+    try {
+      await postgresql.query(
+        `DELETE FROM product_review_children WHERE review_id=${Number(
+          reviewId
+        )}`
+      );
+
+      const response = await postgresql.query(
+        `DELETE FROM product_review WHERE review_id=${Number(reviewId)}`
+      );
+
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("deleteReviewData error >>>> ", error);
+      return false;
+    }
+  },
+
+  updateReviewData: async (reviewId, review) => {
+    try {
+      const updateRes = await postgresql.query(
+        `UPDATE product_review SET review='${review}' WHERE review_id=${reviewId}`
+      );
+
+      return updateRes?.rows ? true : false;
+    } catch (error) {
+      console.log("updateReviewData error >>>> ", error);
+      return false;
+    }
+  },
+
+  createReviewChildren: async (review_id, user_id, review, author_type) => {
+    try {
+      const response =
+        await postgresql.query(`INSERT INTO product_review_children(review_id, user_id, review, status, review_date, author_type) 
+      VALUES(${Number(review_id)}, ${Number(
+          user_id
+        )}, '${review}', 1, Now(), '${author_type}')`);
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("createReviewChildren error >>>> ", error);
+      return false;
+    }
+  },
+
+  deleteReviewChildren: async (childrenId) => {
+    try {
+      const response = await postgresql.query(
+        `DELETE FROM product_review_children WHERE review_children_id=${Number(
+          childrenId
+        )}`
+      );
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("deleteReviewChildren error >>>> ", error);
+      return false;
+    }
+  },
+
+  updateReviewChildrenStatus: async (childrenId, status) => {
+    try {
+      const response = await postgresql.query(
+        `UPDATE product_review_children SET status = ${Number(
+          status
+        )} WHERE review_children_id=${Number(childrenId)}`
+      );
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("updateReviewChildrenStatus error >>>> ", error);
+      return false;
+    }
+  },
+
+  updateUserReviewChildren: async (childrenId, review) => {
+    try {
+      const response = await postgresql.query(
+        `UPDATE product_review_children SET review = '${review}' WHERE review_children_id=${Number(
+          childrenId
+        )}`
+      );
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("updateUserReviewChildren error >>>> ", error);
+      return false;
     }
   },
 };

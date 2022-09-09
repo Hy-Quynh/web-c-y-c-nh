@@ -1,9 +1,9 @@
 import { request } from "../utils/request";
 
-export async function getAllUser(type, sort, limit, offset){
+export async function getAllUser(type, sort, limit, offset, search){
   return request({
     method: 'GET',
-    url: `/user?type=${type}&limit=${limit}&offset=${offset}&sort=${sort}`
+    url: `/user?type=${type}&limit=${limit}&offset=${offset}&sort=${sort}&search=${search}`
   })
 }
 
@@ -41,5 +41,13 @@ export async function updateUserInfo({id, email, first_name, last_name, address,
     url: `/user/${id}`,
     method: 'PUT',
     body: {email, first_name, last_name, address, phone_number} 
+  })
+}
+
+export async function updateAdminRole(adminId, role) {
+  return request({
+    url: `/user/admin/${adminId}/role`,
+    method: 'PUT',
+    body: {role}
   })
 }

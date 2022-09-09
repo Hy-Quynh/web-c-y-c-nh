@@ -8,6 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PropTypes from "prop-types";
 import {
   Alert,
+  Box,
   FormControl,
   IconButton,
   InputLabel,
@@ -128,79 +129,86 @@ export default function AddManagerModal(props) {
               })}
             </Select>
           </FormControl>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <Box component="form" onSubmit={(event) => event.preventDefault()} autoComplete="false">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <CustomInput
+                label="Họ"
+                autoComplete="off"
+                variant="filled"
+                style={{ marginTop: 11, textAlign: "left" }}
+                onChange={(event) =>
+                  setEditUserData({
+                    ...editUserData,
+                    firstName: event.target.value,
+                  })
+                }
+              />
+              <CustomInput
+                label="Tên"
+                autoComplete="off"
+                variant="filled"
+                style={{ marginTop: 11, textAlign: "left" }}
+                onChange={(event) =>
+                  setEditUserData({
+                    ...editUserData,
+                    lastName: event.target.value,
+                  })
+                }
+              />
+            </div>
             <CustomInput
-              label="Họ"
-              id="post-title"
+              autoComplete="off"
+              label="Email"
+              variant="filled"
+              style={{ marginTop: 11, textAlign: "left" }}
+              onChange={(event) =>
+                setEditUserData({ ...editUserData, email: event.target.value })
+              }
+            />
+
+            <CustomInput
+              autoComplete="off"
+              label="Địa chỉ"
               variant="filled"
               style={{ marginTop: 11, textAlign: "left" }}
               onChange={(event) =>
                 setEditUserData({
                   ...editUserData,
-                  firstName: event.target.value,
+                  address: event.target.value,
                 })
               }
             />
+
             <CustomInput
-              label="Tên"
-              id="post-title"
+              autoComplete="off"
+              label="Số điện thoại"
               variant="filled"
+              style={{ marginTop: 11, textAlign: "left" }}
+              onChange={(event) =>
+                setEditUserData({ ...editUserData, phone: event.target.value })
+              }
+            />
+
+            <CustomInput
+              autoComplete="new-password"
+              label="Mật khẩu"
+              variant="filled"
+              type="password"
               style={{ marginTop: 11, textAlign: "left" }}
               onChange={(event) =>
                 setEditUserData({
                   ...editUserData,
-                  lastName: event.target.value,
+                  password: event.target.value,
                 })
               }
             />
-          </div>
-          <CustomInput
-            label="Email"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            onChange={(event) =>
-              setEditUserData({ ...editUserData, email: event.target.value })
-            }
-          />
-
-          <CustomInput
-            label="Địa chỉ"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            onChange={(event) =>
-              setEditUserData({ ...editUserData, address: event.target.value })
-            }
-          />
-
-          <CustomInput
-            label="Số điện thoại"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            onChange={(event) =>
-              setEditUserData({ ...editUserData, phone: event.target.value })
-            }
-          />
-
-          <CustomInput
-            label="Mật khẩu"
-            id="post-title"
-            variant="filled"
-            type="password"
-            style={{ marginTop: 11, textAlign: "left" }}
-            onChange={(event) =>
-              setEditUserData({ ...editUserData, password: event.target.value })
-            }
-          />
+          </Box>
           <div style={{ marginTop: "20px" }}>
             {editUserError.status && (
               <Alert severity={editUserError.type}>
@@ -214,8 +222,15 @@ export default function AddManagerModal(props) {
             loading={modalLoading}
             autoFocus
             onClick={async () => {
-              const { email, firstName, lastName, address, phone, password, role } =
-                editUserData;
+              const {
+                email,
+                firstName,
+                lastName,
+                address,
+                phone,
+                password,
+                role,
+              } = editUserData;
               if (
                 email.length <= 0 ||
                 firstName.length <= 0 ||

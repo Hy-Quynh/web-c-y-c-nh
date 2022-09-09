@@ -129,7 +129,7 @@ function Layout(props) {
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav">
+          <List component="nav" sx={{overflowY: 'auto'}} style={{overflowY: 'auto'}}>
             <MainListItems />
           </List>
         </Drawer>

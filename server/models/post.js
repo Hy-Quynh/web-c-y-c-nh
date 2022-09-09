@@ -4,7 +4,7 @@ const { getByLimitAndOffset } = require("../utils/util");
 module.exports = {
   getAllPost: async (limit, offset, search) => {
     try {
-      const limitOffset = getByLimitAndOffset(limit, offset)
+      const limitOffset = getByLimitAndOffset(limit, offset);
       const getQuery = await postgresql.query(
         `SELECT blog_id, blog_title, blog_desc, blog_image, create_at, 
         (SELECT COUNT(br.review_id) FROM blog_review br WHERE br.blog_id = blog.blog_id ) AS count_review,
@@ -13,7 +13,7 @@ module.exports = {
           search && search !== "undefined"
             ? `blog_title LIKE '%${search}%'`
             : `blog_title != ''`
-        } ${limitOffset}`
+        } ORDER BY create_at DESC ${limitOffset}`
       );
       if (getQuery?.rows) return getQuery?.rows;
     } catch (error) {
@@ -22,18 +22,34 @@ module.exports = {
     }
   },
 
+  getTotalPost: async (search) => {
+    try {
+      const postTotal = await postgresql.query(
+        `SELECT COUNT(blog_id) as total_post FROM blog 
+         WHERE ${
+           search && search !== "undefined"
+             ? `blog_title LIKE '%${search}%'`
+             : `blog_title != ''`
+         }`
+      );
+
+      return postTotal?.rows[0]?.total_post || 0;
+    } catch (error) {
+      console.log("getTotalPost error >>>> ", error);
+      return 0;
+    }
+  },
+
   getPostInfo: async (postId) => {
     try {
-      if (postId){
+      if (postId) {
         const getQuery = await postgresql.query(
           `SELECT blog_id, blog_title, blog_desc, blog_image, blog_view, create_at,
           (SELECT COUNT(br.review_id) FROM blog_review br WHERE br.blog_id = blog.blog_id ) AS count_review,
           (SELECT COUNT(bf.user_id) FROM blog_favourite bf WHERE bf.blog_id = blog.blog_id ) AS count_favourite
-          FROM blog WHERE blog_id=${Number(
-            postId
-          )}`
+          FROM blog WHERE blog_id=${Number(postId)}`
         );
-  
+
         if (getQuery?.rows?.length) return getQuery?.rows[0];
       }
       return {};
@@ -48,7 +64,7 @@ module.exports = {
       const insertQuery = await postgresql.query(
         `INSERT INTO blog(blog_title, blog_desc, blog_image, create_at, blog_view) VALUES('${title}', '${desc}', '${image}', Now(), 0)`
       );
-      return insertQuery?.rows ? true: false
+      return insertQuery?.rows ? true : false;
     } catch (error) {
       console.log("createNewPost error >>>> ", error);
       return false;
@@ -60,7 +76,7 @@ module.exports = {
       const deletePost = await postgresql.query(
         `DELETE FROM blog WHERE blog_id = ${postId}`
       );
-      return deletePost?.rows ? true: false
+      return deletePost?.rows ? true : false;
     } catch (error) {
       console.log("deletePostInfo error >>>> ", error);
       return false;
@@ -74,7 +90,7 @@ module.exports = {
           postId
         )}`
       );
-      return updateRes?.rows ? true: false
+      return updateRes?.rows ? true : false;
     } catch (error) {
       console.log("updatePostData error >>>> ", error);
       return false;
@@ -83,7 +99,7 @@ module.exports = {
 
   getReviewByPost: async (postId, limit, offset) => {
     try {
-      const limitOffset = getByLimitAndOffset(limit, offset)
+      const limitOffset = getByLimitAndOffset(limit, offset);
       const queryRes = await postgresql.query(
         `SELECT r.*, u.last_name, u.first_name FROM blog_review r JOIN users u ON r.user_id = u.user_id WHERE r.blog_id=${Number(
           postId
@@ -97,7 +113,7 @@ module.exports = {
       if (queryRes?.rows)
         return {
           review: queryRes?.rows,
-          totalItem: totalReview?.rows[0].total_item,
+          total: totalReview?.rows[0].total_item,
         };
       return {};
     } catch (error) {
@@ -113,7 +129,7 @@ module.exports = {
           user_id
         )}, '${review}', ${Number(blog_id)}, ${status})`
       );
-      return insertRes?.rows ? true: false
+      return insertRes?.rows ? true : false;
     } catch (error) {
       console.log("createBlogReview error >>>> ", error);
       return false;
@@ -127,7 +143,7 @@ module.exports = {
           blogId
         )} AND user_id=${Number(userId)}`
       );
-      return userFavourite?.rows?.length ? true: false
+      return userFavourite?.rows?.length ? true : false;
     } catch (error) {
       console.log("getUserBlogFavourite error >>>> ", error);
       return false;
@@ -142,7 +158,7 @@ module.exports = {
             userId
           )}, ${Number(blogId)})`
         );
-        return changeRes?.rows ? true: false
+        return changeRes?.rows ? true : false;
       }
 
       const deleteRes = await postgresql.query(
@@ -150,9 +166,41 @@ module.exports = {
           blogId
         )} AND user_id=${Number(userId)}`
       );
-      return deleteRes?.rows ? true: false
+      return deleteRes?.rows ? true : false;
     } catch (error) {
       console.log("changeUserFavouriteBlog error >>>> ", error);
+      return false;
+    }
+  },
+
+  getAllRelativePost: async (limit, offset, existPost) => {
+    try {
+      const limitOffset = getByLimitAndOffset(limit, offset);
+      const getQuery = await postgresql.query(
+        `SELECT blog_id, blog_title, blog_desc, blog_image, create_at, 
+        (SELECT COUNT(br.review_id) FROM blog_review br WHERE br.blog_id = blog.blog_id ) AS count_review,
+        (SELECT COUNT(bf.user_id) FROM blog_favourite bf WHERE bf.blog_id = blog.blog_id ) AS count_favourite
+        FROM blog WHERE blog_id != ${Number(
+          existPost
+        )} ORDER BY create_at DESC ${limitOffset}`
+      );
+      return getQuery?.rows || [];
+    } catch (error) {
+      console.log("getAllRelativePost error >>>> ", error);
+      return [];
+    }
+  },
+
+  changeBlogView: async (postId, view) => {
+    try {
+      const response = await postgresql.query(
+        `UPDATE blog SET blog_view=${Number(view)} WHERE blog_id=${Number(
+          postId
+        )}`
+      );
+      return response?.rows ? true : false;
+    } catch (error) {
+      console.log("changeBlogView error >>>> ", error);
       return false;
     }
   },

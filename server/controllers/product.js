@@ -23,6 +23,14 @@ const {
   updatePromoData,
   getProductPromo,
   getPromoFreeProduct,
+  checkUserProductPurchase,
+  getProductQuantity,
+  deleteReviewData,
+  updateReviewData,
+  createReviewChildren,
+  deleteReviewChildren,
+  updateReviewChildrenStatus,
+  updateUserReviewChildren,
 } = require("../models/product");
 const moment = require("moment");
 
@@ -44,8 +52,8 @@ module.exports = {
       let product_sale = response?.[i]?.product_price;
       const newPromo = promo?.filter((item) => {
         if (
-          moment(item?.promo_start).isSameOrBefore(moment(), 'day') &&
-          moment(item?.promo_end).isSameOrAfter(moment(), 'day')
+          moment(item?.promo_start).isSameOrBefore(moment(), "day") &&
+          moment(item?.promo_end).isSameOrAfter(moment(), "day")
         ) {
           return true;
         }
@@ -95,8 +103,8 @@ module.exports = {
 
     const newPromo = promo?.filter((item) => {
       if (
-        moment(item?.promo_start).isSameOrBefore(moment(), 'day') &&
-        moment(item?.promo_end).isSameOrAfter(moment(), 'day')
+        moment(item?.promo_start).isSameOrBefore(moment(), "day") &&
+        moment(item?.promo_end).isSameOrAfter(moment(), "day")
       ) {
         return true;
       }
@@ -129,13 +137,15 @@ module.exports = {
       product_image,
       product_price,
       product_category,
+      product_quantity,
     } = productData;
     const response = await createNewProduct(
       product_name,
       product_description,
       product_image,
       product_price,
-      product_category
+      product_category,
+      product_quantity
     );
     res.send({ success: true, payload: response });
   }),
@@ -187,7 +197,7 @@ module.exports = {
       paymentMethod,
       userInfo
     );
-    res.send({ success: response });
+    res.send(response);
   }),
 
   getListCheckout: asyncHandler(async (req, res) => {
@@ -268,5 +278,58 @@ module.exports = {
     const { promoId } = req?.params;
     const response = await productMiddleware.getPromoById(promoId);
     res.send(response);
+  }),
+
+  checkUserProductPurchase: asyncHandler(async (req, res) => {
+    const { productId, userId } = req?.params;
+    const response = await checkUserProductPurchase(productId, userId);
+    res.send({ success: true, payload: response });
+  }),
+
+  getProductQuantity: asyncHandler(async (req, res) => {
+    const { productId } = req?.params;
+    const response = await getProductQuantity(productId);
+    res.send({ success: true, payload: response });
+  }),
+
+  deleteReviewData: asyncHandler(async (req, res) => {
+    const { reviewId } = req?.params;
+    const response = await deleteReviewData(reviewId);
+    res.send({ success: response });
+  }),
+
+  updateUserReview: asyncHandler(async (req, res) => {
+    const { reviewId } = req?.params;
+    const { review } = req?.body;
+    console.log('reviewId >>>>> ', reviewId);
+    console.log('review >>>> ', review);
+    const response = await updateReviewData(reviewId, review);
+    res.send({ success: response });
+  }),
+
+  createReviewChildren: asyncHandler(async (req, res) => {
+    const {review_id, user_id, review, author_type} = req?.body
+    const response = await createReviewChildren(review_id, user_id, review, author_type);
+    res.send({ success: response });
+  }),
+
+  deleteReviewChildren: asyncHandler(async (req, res) => {
+    const {childrenId} = req?.params
+    const response = await deleteReviewChildren(childrenId)
+    res.send({ success: response });
+  }),
+
+  updateReviewChildrenStatus: asyncHandler(async (req, res) => {
+    const {childrenId} = req?.params
+    const {status} = req?.body
+    const response = await updateReviewChildrenStatus(childrenId, status)
+    res.send({ success: response });
+  }),
+
+  updateUserReviewChildren: asyncHandler(async (req, res) => {
+    const {childrenId} = req?.params
+    const { review } = req?.body;
+    const response = await updateUserReviewChildren(childrenId, review);
+    res.send({ success: response });
   }),
 };

@@ -71,7 +71,7 @@ export default function CustomDialog(props) {
         sx={{
           ".css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
             maxWidth: maxWidth || "900px",
-            width: width || 'auto'
+            width: width || "auto",
           },
         }}
       >
@@ -89,10 +89,10 @@ export default function CustomDialog(props) {
                 setModalLoading(true);
                 const res = await handleSubmit();
                 setModalLoading(false);
-                if (res) {
+                if (res === true) {
                   toast.success("Xử lí tác vụ thành công");
-                  // onClose();
-                } else {
+                }
+                if (res === false) {
                   toast.error("Xử lí tác vụ thất bại");
                 }
               }}

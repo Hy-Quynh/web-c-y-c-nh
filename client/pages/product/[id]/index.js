@@ -97,6 +97,14 @@ export default function ProductDetail() {
                     </div>
                   )}
                 </div>
+                <div>
+                  <span style={{ fontWeight: 700, color: "#3CB914" }}>
+                    Số lượng:
+                  </span>{" "}
+                  <span style={{ fontWeight: 700 }}>
+                    {productDetail?.product_quantity || 0}
+                  </span>
+                </div>
                 {productDetail?.promo?.filter((item) => {
                   return item?.promo_rule === "FREE_PRODUCT";
                 })?.length ? (
@@ -197,6 +205,15 @@ export default function ProductDetail() {
                       if (!userData?.user_id) {
                         return toast.error(
                           "Bạn cần đăng nhập để thực hiện chức năng này"
+                        );
+                      }
+
+                      if (
+                        productQuantity >
+                        Number(productDetail?.product_quantity)
+                      ) {
+                        return toast.error(
+                          "Số lượng lớn hơn số lượng sản phẩm hiện có"
                         );
                       }
 

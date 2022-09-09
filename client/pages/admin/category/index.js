@@ -137,11 +137,11 @@ export default function ProductCategory() {
         type: "error",
         message: "Tên không thể chứa kí tự đặc biệt",
       });
-    } else if (category_name.length <= 3) {
+    } else if (category_name.length <= 1) {
       setEditCategoryError({
         status: true,
         type: "error",
-        message: "Tên phải nhiều hơn 3 kí tự",
+        message: "Tên phải nhiều hơn 1 kí tự",
       });
     } else if (category_description.length <= 10) {
       setEditCategoryError({

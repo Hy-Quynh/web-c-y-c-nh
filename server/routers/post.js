@@ -12,6 +12,7 @@ router.get('/review', postController.getAllReview)
 router.post('/review', postController.createNewPostReview)
 router.get('/favourite', postController.getUserBlogFavourite)
 router.put('/favourite', postController.changeUserFavouriteBlog)
-
+router.get('/relative', postController.getAllRelativePost)
+router.put('/view/:postId', postController.changeBlogView)
 
 module.exports = router;

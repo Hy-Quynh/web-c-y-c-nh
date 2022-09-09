@@ -2,18 +2,10 @@ import * as React from "react";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import TopicIcon from "@mui/icons-material/Topic";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import PostAddIcon from "@mui/icons-material/PostAdd";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import { useRouter } from "next/router";
 import { getRoleByAdminId } from "../../services/role";
 import { parseJSON } from "../../utils/common";
 import { ADMIN_ROLE, USER_INFO_KEY } from "../../utils/constants";
-import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
-import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 
 export default function MainListItems() {
   const [userRole, setUserRole] = React.useState([]);
@@ -28,7 +20,12 @@ export default function MainListItems() {
     if (userInfo?.admin_id) {
       const role = await getRoleByAdminId(userInfo?.admin_id);
       if (role?.data?.success) {
-        setUserRole(role?.data?.payload?.role_function?.split(","));
+        const roleSplit = role?.data?.payload?.role_function?.split(",")
+        const adminRole = ADMIN_ROLE?.map((item) => item?.value)
+        roleSplit.sort(function(a, b){  
+          return adminRole.indexOf(a) - adminRole.indexOf(b);
+        });
+        setUserRole(roleSplit);
       }
     }
   };
