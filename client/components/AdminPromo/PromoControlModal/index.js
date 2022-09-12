@@ -72,16 +72,9 @@ export default function PromoControlModal(props) {
       return false;
     }
 
-    if (type === "CREATE") {
-      if (parseStart <= parseCurrent) {
-        toast.error("Ngày bắt đầu cần lớn hơn ngày hiện tại");
-        return false;
-      }
-
-      if (parseEnd < parseStart) {
-        toast.error("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
-        return false;
-      }
+    if (parseEnd < parseStart) {
+      toast.error("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
+      return false;
     }
 
     if (promo_rule === "DISCOUNT") {
