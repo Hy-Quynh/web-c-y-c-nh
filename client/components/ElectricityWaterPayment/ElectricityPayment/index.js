@@ -9,7 +9,7 @@ import {
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { GET_PROVINCE_API, USER_INFO_KEY } from "../../../utils/constants";
+import { GET_PROVINCE_API, STRIPE_KEY, USER_INFO_KEY } from "../../../utils/constants";
 import CustomInput from "../../CustomInput";
 import style from "./style.module.scss";
 import _ from "lodash";
@@ -24,6 +24,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { electricityPayment } from "../../../services/electricity-water";
+const stripeKey = loadStripe(STRIPE_KEY)
 
 export default function ElectricityPayment() {
   const [listProvince, setListProvince] = useState([]);
@@ -190,7 +191,7 @@ export default function ElectricityPayment() {
         </div>
       </div>
       {visiblePaymentModal && (
-        <Elements stripe={stripePromise}>
+        <Elements stripe={stripeKey}>
           <PaymentCardModal
             visible={visiblePaymentModal}
             onClose={() => setVisiblePaymentModal(false)}
@@ -331,6 +332,3 @@ const PaymentCardModal = (props) => {
   );
 };
 
-const stripePromise = loadStripe(
-  "pk_test_51KHAdUKzeo9d90anKj4ocFehY0bDFuNR5REW9UZKQ3vKWpfXJgbr2P0odm9HugkcoVmfmF383bTkmZRQZvpp8wlv00PAvM4dYm"
-);

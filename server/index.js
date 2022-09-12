@@ -13,6 +13,7 @@ const cookingRecipeRouter = require("./routers/cookingRecipe");
 const contactRouter = require("./routers/contact");
 const chatRouter = require("./routers/chat");
 const electricityWaterRouter = require("./routers/electricity-water");
+const liveStreamRouter = require("./routers/live-stream");
 
 const cors = require("cors");
 const http = require("http");
@@ -67,9 +68,7 @@ app.use(function (req, res, next) {
 });
 
 app.use(cors());
-
 require("dotenv").config();
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/api/auth", authRouter);
@@ -83,6 +82,7 @@ app.use("/api/cooking-recipe", cookingRecipeRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/electricity-water", electricityWaterRouter);
+app.use("/api/livestream", liveStreamRouter);
 
 let PORT = process.env.PORT || 5004;
 server.listen(PORT, () => console.log(`App running on port: ${PORT}`));

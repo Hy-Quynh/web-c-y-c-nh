@@ -31,6 +31,7 @@ const {
   deleteReviewChildren,
   updateReviewChildrenStatus,
   updateUserReviewChildren,
+  getSellingProduct,
 } = require("../models/product");
 const moment = require("moment");
 
@@ -190,12 +191,13 @@ module.exports = {
   }),
 
   checkoutCart: asyncHandler(async (req, res) => {
-    const { cartData, totalPrice, paymentMethod, userInfo } = req.body;
+    const { cartData, totalPrice, paymentMethod, userInfo, paymentId } = req.body;
     const response = await createCartData(
       cartData,
       totalPrice,
       paymentMethod,
-      userInfo
+      userInfo,
+      paymentId
     );
     res.send(response);
   }),
@@ -301,8 +303,6 @@ module.exports = {
   updateUserReview: asyncHandler(async (req, res) => {
     const { reviewId } = req?.params;
     const { review } = req?.body;
-    console.log('reviewId >>>>> ', reviewId);
-    console.log('review >>>> ', review);
     const response = await updateReviewData(reviewId, review);
     res.send({ success: response });
   }),
@@ -332,4 +332,46 @@ module.exports = {
     const response = await updateUserReviewChildren(childrenId, review);
     res.send({ success: response });
   }),
+
+  getSellingProduct: asyncHandler(async (req, res) => {
+    const {limit, offset} = req?.query
+    const response = await getSellingProduct(limit, offset)
+
+    const newProduct = [];
+    for (let i = 0; i < response?.length; i++) {
+      const promo = await getProductPromo(response[i]?.product_id);
+      let product_sale = response?.[i]?.product_price;
+      const newPromo = promo?.filter((item) => {
+        if (
+          moment(item?.promo_start).isSameOrBefore(moment(), "day") &&
+          moment(item?.promo_end).isSameOrAfter(moment(), "day")
+        ) {
+          return true;
+        }
+      });
+
+      for (let j = 0; j < newPromo?.length; j++) {
+        if (newPromo?.[j]?.promo_rule !== "DISCOUNT") {
+          freeProduct = await getPromoFreeProduct(newPromo?.[j]?.promo_id);
+          newPromo[j].free_product = freeProduct;
+        } else {
+          if (newPromo?.[j]?.rule_type === "MONEY") {
+            product_sale = product_sale - newPromo?.[j]?.rule_value;
+          } else {
+            product_sale =
+              product_sale -
+              response?.[i]?.product_price * (newPromo?.[j]?.rule_value / 100);
+          }
+        }
+      }
+      newProduct?.push({
+        ...response?.[i],
+        product_sale,
+        promo: [...newPromo],
+      });
+    }
+
+
+    res.send({ success: true, payload: newProduct });
+  })
 };

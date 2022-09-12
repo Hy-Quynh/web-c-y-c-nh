@@ -136,12 +136,13 @@ export async function checkoutCart(
   cartData,
   paymentMethod,
   totalPrice,
-  userInfo
+  userInfo,
+  paymentId
 ) {
   return request({
     method: "POST",
     url: `/product/cart`,
-    body: { cartData, paymentMethod, totalPrice, userInfo },
+    body: { cartData, paymentMethod, totalPrice, userInfo, paymentId },
   });
 }
 
@@ -240,5 +241,13 @@ export async function checkUserPurchasedProduct(userId, productId) {
   return request({
     method: "GET",
     url: `/product/purchase/${productId}/${userId}`,
+  });
+}
+
+
+export async function getSellingProduct(limit, offset) {
+  return request({
+    method: "GET",
+    url: `/product/selling/info?limit=${limit}&offset=${offset}`,
   });
 }

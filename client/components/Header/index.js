@@ -46,7 +46,7 @@ export default function Header() {
         className="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn"
         data-wow-delay="0.1s"
       >
-        <a href="index.html" className="navbar-brand ms-4 ms-lg-0">
+        <a href="/" className="navbar-brand ms-4 ms-lg-0">
           <h1 className="fw-bold text-primary m-0">
             F<span className="text-secondary">oo</span>dy
           </h1>
@@ -86,7 +86,11 @@ export default function Header() {
                 >
                   Thanh toán điện nước
                 </a>
-                <a className="dropdown-item" style={{ cursor: "pointer" }}>
+                <a
+                  className="dropdown-item"
+                  style={{ cursor: "pointer" }}
+                  href="/livestream"
+                >
                   Live Stream
                 </a>
                 <a

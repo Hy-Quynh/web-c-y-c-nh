@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import {
   BLUR_BASE64,
   FORMAT_NUMBER,
+  STRIPE_KEY,
   USER_CART_INFO,
   USER_INFO_KEY,
 } from "../../utils/constants";
@@ -20,11 +21,34 @@ import _ from "lodash";
 import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  CardElement,
+  Elements,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { Box } from "@mui/material";
 
 const PAYMENT_METHOD = [
   { label: "Thanh toán khi nhận hàng", value: "COD" },
   { label: "Thanh toán qua thẻ", value: "VISA" },
 ];
+const stripeKey = loadStripe(STRIPE_KEY)
+
+const calculateTotalPrice = (lstProduct) => {
+  const total = lstProduct?.reduce((previous, next) => {
+    if (
+      Number(next.product_sale) > 0 &&
+      Number(next.product_sale) !== Number(next.product_price)
+    ) {
+      return previous + Number(next.quantity) * Number(next.product_sale);
+    } else {
+      return previous + Number(next.quantity) * Number(next.product_price);
+    }
+  }, 0);
+  return total || 0;
+};
 
 export default function CartPage() {
   const [cartProduct, setCartProduct] = useState([]);
@@ -51,37 +75,15 @@ export default function CartPage() {
     }
   }, []);
 
-  const handleCheckout = async () => {
-    const { first_name, last_name, email, address, phone_number } = userInfo;
-
-    const checkNull = _.compact([
-      first_name,
-      last_name,
-      email,
-      address,
-      phone_number,
-    ]);
-    if (checkNull.length < 5) {
-      toast.error("Thông tin không được để trống");
-      return false;
-    }
-
-    if (!isVietnamesePhoneNumber(phone_number)) {
-      toast.error("Số điện thoại sai định dạng");
-      return false;
-    }
-
-    if (!validateEmail(email)) {
-      toast.error("Email sai định dạng");
-      return false;
-    }
+  const handleCheckout = async (paymentId) => {
     const totalPrice = calculateTotalPrice(cartProduct);
 
     const checkoutResponse = await checkoutCart(
       cartProduct,
       paymentOption,
       totalPrice,
-      userInfo
+      userInfo,
+      paymentId
     );
     if (checkoutResponse?.data?.success) {
       localStorage.removeItem(USER_CART_INFO);
@@ -92,20 +94,6 @@ export default function CartPage() {
     if (checkoutResponse?.data?.message) {
       toast.error(checkoutResponse?.data?.message);
     }
-  };
-
-  const calculateTotalPrice = (lstProduct) => {
-    const total = lstProduct?.reduce((previous, next) => {
-      if (
-        Number(next.product_sale) > 0 &&
-        Number(next.product_sale) !== Number(next.product_price)
-      ) {
-        return previous + Number(next.quantity) * Number(next.product_sale);
-      } else {
-        return previous + Number(next.quantity) * Number(next.product_price);
-      }
-    }, 0);
-    return total || 0;
   };
 
   const changeProductQuantity = async (qlt, productId, type = "add") => {
@@ -309,140 +297,219 @@ export default function CartPage() {
       </table>
 
       {visibleCheckoutModal && (
-        <CustomDialog
-          onClose={() => setVisibleCheckoutModal(false)}
-          visible={visibleCheckoutModal}
-          title="Xác nhận thanh toán"
-          closeTitle="Đóng"
-          closeSubmitTitle="Xác nhận"
-          handleSubmit={() => {
-            return handleCheckout();
-          }}
-          maxWidth="700px"
-          width="700px"
-        >
-          <h5 style={{ textAlign: "center" }}>Thông tin khách hàng</h5>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ width: "48%" }}>
-              <CustomInput
-                label="Họ"
-                id="post-title"
-                variant="filled"
-                style={{ marginTop: 11, textAlign: "left" }}
-                value={userInfo?.first_name}
-                onChange={(event) =>
-                  setUserInfo({
-                    ...userInfo,
-                    first_name: event.target.value,
-                  })
-                }
-              />
-            </div>
-            <div style={{ width: "48%" }}>
-              <CustomInput
-                label="Tên"
-                id="post-title"
-                variant="filled"
-                style={{ marginTop: 11, textAlign: "left" }}
-                value={userInfo?.last_name}
-                onChange={(event) =>
-                  setUserInfo({
-                    ...userInfo,
-                    last_name: event.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <CustomInput
-            label="Số điện thoại"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            value={userInfo?.phone_number}
-            onChange={(event) =>
-              setUserInfo({
-                ...userInfo,
-                phone_number: event.target.value,
-              })
-            }
+        <Elements stripe={stripeKey}>
+          <PaymentDialog
+            visible={visibleCheckoutModal}
+            onClose={() => setVisibleCheckoutModal(false)}
+            handleCheckout={(paymentId) => handleCheckout(paymentId)}
+            userInfo={userInfo}
+            setUserInfo={setUserInfo}
+            changePaymentOption={(method) => setPaymentOption(method)}
+            cartProduct={cartProduct}
           />
-          <CustomInput
-            label="Email"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            value={userInfo?.email}
-            onChange={(event) =>
-              setUserInfo({ ...userInfo, email: event.target.value })
-            }
-          />
-
-          <CustomInput
-            label="Địa chỉ"
-            id="post-title"
-            variant="filled"
-            style={{ marginTop: 11, textAlign: "left" }}
-            value={userInfo?.address}
-            onChange={(event) =>
-              setUserInfo({
-                ...userInfo,
-                address: event.target.value,
-              })
-            }
-          />
-          <hr />
-          <h5 style={{ textAlign: "center", marginTop: "20px" }}>
-            Phương thức thanh toán
-          </h5>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              alignItems: "center",
-              marginTop: "20px",
-            }}
-          >
-            {PAYMENT_METHOD?.map((item, index) => {
-              return (
-                <div
-                  key={`payment-item-${index}`}
-                  onClick={() => {
-                    if (item?.value === "VISA") {
-                      return toast.error(
-                        "Chưa hỗ trợ chức năng thanh toán này"
-                      );
-                    }
-                    setPaymentOption(item?.value);
-                  }}
-                  style={{
-                    padding: "30px",
-                    border: "1px solid rgb(60,185,20)",
-                    background:
-                      paymentOption === item?.value
-                        ? "rgb(60,185,20)"
-                        : "white",
-                    width: "40%",
-                  }}
-                >
-                  {item?.label}
-                </div>
-              );
-            })}
-          </div>
-          <hr />
-          <h6 style={{ color: "red", textAlign: "right" }}>
-            Số tiền thanh toán:{" "}
-            {FORMAT_NUMBER.format(calculateTotalPrice(cartProduct))}đ
-          </h6>
-        </CustomDialog>
+        </Elements>
       )}
     </div>
   );
 }
+
+const PaymentDialog = (props) => {
+  const [paymentOption, setPaymentOption] = useState("COD");
+  const {
+    visible,
+    onClose,
+    handleCheckout,
+    userInfo,
+    setUserInfo,
+    changePaymentOption,
+    cartProduct,
+  } = props;
+  const stripe = useStripe();
+  const elements = useElements();
+
+  return (
+    <CustomDialog
+      onClose={() => onClose()}
+      visible={visible}
+      title="Xác nhận thanh toán"
+      closeTitle="Đóng"
+      closeSubmitTitle="Xác nhận"
+      handleSubmit={async () => {
+        const { first_name, last_name, email, address, phone_number } =
+          userInfo;
+          
+        const checkNull = _.compact([
+          first_name,
+          last_name,
+          email,
+          address,
+          phone_number,
+        ]);
+        if (checkNull.length < 5) {
+          toast.error("Thông tin không được để trống");
+          return false;
+        }
+
+        if (!isVietnamesePhoneNumber(phone_number)) {
+          toast.error("Số điện thoại sai định dạng");
+          return false;
+        }
+
+        if (!validateEmail(email)) {
+          toast.error("Email sai định dạng");
+          return false;
+        }
+
+        if (paymentOption === "VISA") {
+          if (!stripe || !elements) {
+            return toast.error("Cần nhập đầy đủ thông tin thanh toán");
+          }
+
+          const { error, paymentMethod } = await stripe.createPaymentMethod({
+            type: "card",
+            card: elements.getElement(CardElement),
+            billing_details: {
+              email: userInfo?.email,
+              phone: userInfo?.phone_number,
+              name: userInfo?.first_name + " " + userInfo?.last_name,
+            },
+          });
+
+          if (!error) {
+            const { id } = paymentMethod;
+            return handleCheckout(id);
+          } else {
+            return toast.error("Thanh toán thất bại, vui lòng thử lại sau");
+          }
+        }
+        return handleCheckout();
+      }}
+      maxWidth="700px"
+      width="700px"
+    >
+      <h5 style={{ textAlign: "center" }}>Thông tin khách hàng</h5>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ width: "48%" }}>
+          <CustomInput
+            label="Họ"
+            id="post-title"
+            variant="filled"
+            style={{ marginTop: 11, textAlign: "left" }}
+            value={userInfo?.first_name}
+            onChange={(event) =>
+              setUserInfo({
+                ...userInfo,
+                first_name: event.target.value,
+              })
+            }
+          />
+        </div>
+        <div style={{ width: "48%" }}>
+          <CustomInput
+            label="Tên"
+            id="post-title"
+            variant="filled"
+            style={{ marginTop: 11, textAlign: "left" }}
+            value={userInfo?.last_name}
+            onChange={(event) =>
+              setUserInfo({
+                ...userInfo,
+                last_name: event.target.value,
+              })
+            }
+          />
+        </div>
+      </div>
+      <CustomInput
+        label="Số điện thoại"
+        id="post-title"
+        variant="filled"
+        style={{ marginTop: 11, textAlign: "left" }}
+        value={userInfo?.phone_number}
+        onChange={(event) =>
+          setUserInfo({
+            ...userInfo,
+            phone_number: event.target.value,
+          })
+        }
+      />
+      <CustomInput
+        label="Email"
+        id="post-title"
+        variant="filled"
+        style={{ marginTop: 11, textAlign: "left" }}
+        value={userInfo?.email}
+        onChange={(event) =>
+          setUserInfo({ ...userInfo, email: event.target.value })
+        }
+      />
+
+      <CustomInput
+        label="Địa chỉ"
+        id="post-title"
+        variant="filled"
+        style={{ marginTop: 11, textAlign: "left" }}
+        value={userInfo?.address}
+        onChange={(event) =>
+          setUserInfo({
+            ...userInfo,
+            address: event.target.value,
+          })
+        }
+      />
+      <hr />
+      <h5 style={{ textAlign: "center", marginTop: "20px" }}>
+        Phương thức thanh toán
+      </h5>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          marginTop: "20px",
+        }}
+      >
+        {PAYMENT_METHOD?.map((item, index) => {
+          return (
+            <div
+              key={`payment-item-${index}`}
+              onClick={() => {
+                setPaymentOption(item?.value);
+                changePaymentOption(item?.value);
+              }}
+              style={{
+                padding: "30px",
+                border: "1px solid rgb(60,185,20)",
+                background:
+                  paymentOption === item?.value ? "rgb(60,185,20)" : "white",
+                width: "40%",
+              }}
+            >
+              {item?.label}
+            </div>
+          );
+        })}
+      </div>
+      {paymentOption === "VISA" ? (
+        <Box
+          sx={{ marginTop: "30px", marginLeft: "30px", marginRight: "30px" }}
+        >
+          <CardElement id="stripe-card-element" onChange={() => {}} />
+        </Box>
+      ) : (
+        <></>
+      )}
+      <hr />
+      <h6 style={{ color: "red", textAlign: "right" }}>
+        Số tiền thanh toán:{" "}
+        {FORMAT_NUMBER.format(calculateTotalPrice(cartProduct))}đ
+      </h6>
+    </CustomDialog>
+  );
+};

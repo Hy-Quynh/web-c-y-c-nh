@@ -2,7 +2,7 @@ import * as React from "react";
 import { useRouter } from "next/router";
 import ProductList from "../components/ProductList";
 import { getAllCategory } from "../services/category";
-import { getListProduct } from "../services/product";
+import { getListProduct, getSellingProduct } from "../services/product";
 import { getAllPostList } from "../services/post";
 import { dateTimeConverter } from "../utils/common";
 
@@ -13,6 +13,7 @@ const LIMIT_POST = 12;
 export default function HomePage() {
   const [listCategory, setListCategory] = React.useState([]);
   const [listProduct, setListProduct] = React.useState([]);
+  const [sellingProduct, setSellingProduct] = React.useState([]);
   const [activeCategory, setActiveCategory] = React.useState(0);
   const [listPost, setListPost] = React.useState([]);
   const serviceRef = React.useRef(null);
@@ -41,9 +42,18 @@ export default function HomePage() {
     }
   };
 
+  const getSellingProductInfo = async () => {
+    const productList = await getSellingProduct()
+    if (productList?.data?.success) {
+      setSellingProduct(productList?.data?.payload);
+    }
+
+  }
+
   React.useEffect(() => {
     getCategoryData();
     getPostData();
+    getSellingProductInfo()
   }, []);
 
   React.useEffect(() => {
@@ -218,8 +228,8 @@ export default function HomePage() {
                 />
                 <h4 className="mb-3">Thanh toán điện nước</h4>
                 <p className="mb-4">
-                  Bạn có thể dễ dàng thanh toán hoá đơn điện nước thông
-                  qua vài bước đơn giản
+                  Bạn có thể dễ dàng thanh toán hoá đơn điện nước thông qua vài
+                  bước đơn giản
                 </p>
                 <a
                   className="btn btn-outline-primary border-2 py-2 px-4 rounded-pill"
@@ -292,7 +302,7 @@ export default function HomePage() {
                 data-wow-delay="0.1s"
                 style={{ maxWidth: "500px" }}
               >
-                <h1 className="display-5 mb-3">Sản phẩm của tôi</h1>
+                <h1 className="display-5 mb-3">Sản phẩm mới</h1>
                 <p>Luôn đảm bảo AN TOÀN - CHẤT LƯỢNG - SỨC KHOẺ cho bạn</p>
               </div>
             </div>
@@ -327,6 +337,33 @@ export default function HomePage() {
           <div className="tab-content">
             <div id="tab-1" className="tab-pane fade show p-0 active">
               <ProductList dataSource={listProduct} />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Product End */}
+
+      {/* Product Start */}
+      <div className="container-xxl py-5">
+        <div className="container">
+          <div className="row g-0 gx-5 align-items-end">
+            <div className="col-lg-6">
+              <div
+                className="section-header text-start mb-5 wow fadeInUp"
+                data-wow-delay="0.1s"
+                style={{ maxWidth: "500px" }}
+              >
+                <h1 className="display-5 mb-3">Sản phẩm bán chạy</h1>
+                <p>
+                  Sản phẩm được tiêu thụ nhiều nhất trong thời gian qua - Một
+                  gợi ý tuyệt vời dành cho bạn
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="tab-content">
+            <div id="tab-1" className="tab-pane fade show p-0 active">
+              <ProductList dataSource={sellingProduct} />
             </div>
           </div>
         </div>

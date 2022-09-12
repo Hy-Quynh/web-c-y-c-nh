@@ -5,8 +5,6 @@ import { PAYMENT_SERVICE } from "../../utils/constants";
 
 export default function ElectricityWaterPayment() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
-
-  console.log('selectedPaymentMethod >> ', selectedPaymentMethod);
   return (
     <div>
       <div

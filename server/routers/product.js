@@ -13,7 +13,6 @@ router.post('/review/children', productController.createReviewChildren)
 router.delete('/review/children/:childrenId', productController.deleteReviewChildren)
 router.put('/review/children/:childrenId/status', productController.updateReviewChildrenStatus)
 router.put('/review/children/:reviewId', productController.updateUserReviewChildren)
-
 router.put('/review/:reviewId/status', productController.changeReviewStatus)
 router.delete('/review/:reviewId', productController.deleteReviewData)
 router.put('/review/:reviewId', productController.updateUserReview)
@@ -31,5 +30,7 @@ router.delete('/promo/:promoId', productController.deletePromoData)
 router.get('/promo/:promoId', productController.getPromoById)
 router.put('/promo/:promoId', productController.updatePromoData)
 router.get('/purchase/:productId/:userId', productController.checkUserProductPurchase)
+router.get('/selling/info', productController.getSellingProduct)
+
 
 module.exports = router;

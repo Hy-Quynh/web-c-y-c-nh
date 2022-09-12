@@ -9,7 +9,7 @@ import {
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { GET_PROVINCE_API, USER_INFO_KEY } from "../../../utils/constants";
+import { GET_PROVINCE_API, STRIPE_KEY, USER_INFO_KEY } from "../../../utils/constants";
 import CustomInput from "../../CustomInput";
 import style from "./style.module.scss";
 import _ from "lodash";
@@ -25,12 +25,16 @@ import {
 } from "@stripe/react-stripe-js";
 import { electricityPayment, waterPayment } from "../../../services/electricity-water";
 
+const stripeKey = loadStripe(STRIPE_KEY)
+
 const WATER_SUPPLIER = [
   { label: "Nhà cung cấp nước 1", value: "nha_cung_cap_1" },
   { label: "Nhà cung cấp nước 2", value: "nha_cung_cap_2" },
   { label: "Nhà cung cấp nước 3", value: "nha_cung_cap_3" },
   { label: "Nhà cung cấp nước 4", value: "nha_cung_cap_4" },
 ];
+
+
 export default function WaterPayment() {
   const [listProvince, setListProvince] = useState([]);
   const [provinceSelected, setProvinceSelected] = useState("");
@@ -259,7 +263,7 @@ export default function WaterPayment() {
         </div>
       </div>
       {visiblePaymentModal && (
-        <Elements stripe={stripePromise}>
+        <Elements stripe={stripeKey}>
           <PaymentCardModal
             visible={visiblePaymentModal}
             onClose={() => setVisiblePaymentModal(false)}
@@ -407,7 +411,3 @@ const PaymentCardModal = (props) => {
     </CustomDialog>
   );
 };
-
-const stripePromise = loadStripe(
-  "pk_test_51KHAdUKzeo9d90anKj4ocFehY0bDFuNR5REW9UZKQ3vKWpfXJgbr2P0odm9HugkcoVmfmF383bTkmZRQZvpp8wlv00PAvM4dYm"
-);

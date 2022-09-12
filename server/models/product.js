@@ -1,6 +1,10 @@
 const { postgresql } = require("../config/connect");
 const { getByLimitAndOffset } = require("../utils/util");
 const moment = require("moment");
+const Stripe = require("stripe");
+const stripe = new Stripe(
+  "sk_test_51KHAdUKzeo9d90anaaPYVtbwYcvv6MXdZ1StdTl4z0YOsywAp0e1F2cNhX5JyjoAtoqLmQFtLOZZSMLOY0D2MpiE00qjsdPDRR"
+);
 
 module.exports = {
   getProductList: async (
@@ -262,7 +266,13 @@ module.exports = {
     }
   },
 
-  createCartData: async (cartData, totalPrice, paymentMethod, userInfo) => {
+  createCartData: async (
+    cartData,
+    totalPrice,
+    paymentMethod,
+    userInfo,
+    paymentId
+  ) => {
     try {
       let checkValid = true;
       for (
@@ -289,6 +299,22 @@ module.exports = {
           success: false,
           message: "Số lượng sản phẩm trong giỏ hàng vượt quá số lượng hiện có",
         };
+      }
+
+      if (paymentMethod === "VISA") {
+        const payment = await stripe.paymentIntents.create({
+          amount: totalPrice,
+          currency: "VND",
+          description: "pay water",
+          payment_method: paymentId,
+          confirm: true,
+        });
+
+        if (!payment)
+          return {
+            success: false,
+            message: "Thanh toán thất bại, vui lòng thử lại sau",
+          };
       }
 
       const insertProduct =
@@ -753,6 +779,19 @@ module.exports = {
     } catch (error) {
       console.log("updateUserReviewChildren error >>>> ", error);
       return false;
+    }
+  },
+
+  getSellingProduct: async (limit, offset) => {
+    try {
+      const limitOffset = getByLimitAndOffset(limit, offset);
+      const response = await postgresql.query(
+        `select pd.* from product pd join product_checkout_detail pcd on pd.product_id = pcd.product_id group by pd.product_id  order by count(pd.product_id) DESC ${limitOffset}`
+      );
+      return response?.rows || [];
+    } catch (error) {
+      console.log("getSellingProduct error >>>> ", error);
+      return [];
     }
   },
 };

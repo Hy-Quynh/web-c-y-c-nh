@@ -5,16 +5,17 @@ import PostAddIcon from "@mui/icons-material/PostAdd";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
-import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import LiveHelpIcon from '@mui/icons-material/LiveHelp';
-import OutdoorGrillIcon from '@mui/icons-material/OutdoorGrill';
-import AssistantIcon from '@mui/icons-material/Assistant';
-import ChatIcon from '@mui/icons-material/Chat';
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import LiveHelpIcon from "@mui/icons-material/LiveHelp";
+import OutdoorGrillIcon from "@mui/icons-material/OutdoorGrill";
+import AssistantIcon from "@mui/icons-material/Assistant";
+import ChatIcon from "@mui/icons-material/Chat";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
-import InvertColorsIcon from '@mui/icons-material/InvertColors';
+import InvertColorsIcon from "@mui/icons-material/InvertColors";
+import VideocamIcon from '@mui/icons-material/Videocam';
 
-export const GET_PROVINCE_API = 'https://provinces.open-api.vn/api/?depth=1'
+export const GET_PROVINCE_API = "https://provinces.open-api.vn/api/?depth=1";
 export const CHAT_HOST = "http://localhost:5004";
 export const USER_INFO_KEY = "user_info";
 export const USER_CART_INFO = "user_prd_card";
@@ -31,6 +32,12 @@ export const ADMIN_ROLE = [
     value: "chat",
     href: "/admin/chat",
     icon: <ChatIcon />,
+  },
+  {
+    label: "LiveStream",
+    value: "livestream",
+    href: "/admin/livestream",
+    icon: <VideocamIcon />,
   },
   {
     label: "Danh mục",
@@ -116,3 +123,6 @@ export const PAYMENT_SERVICE = [
 export const FORMAT_NUMBER = new Intl.NumberFormat();
 export const BLUR_BASE64 =
   "data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
+
+export const STRIPE_KEY =
+  "pk_test_51KHAdUKzeo9d90anKj4ocFehY0bDFuNR5REW9UZKQ3vKWpfXJgbr2P0odm9HugkcoVmfmF383bTkmZRQZvpp8wlv00PAvM4dYm";

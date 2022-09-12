@@ -210,7 +210,7 @@ export default function AdminOrder() {
             Thanh toán tận nơi
           </Alert>
         );
-      case "CARD":
+      case "VISA":
         return (
           <Alert color="success" icon={false}>
             Thanh toán qua thẻ
