@@ -34,7 +34,7 @@ const PAYMENT_METHOD = [
   { label: "Thanh toán khi nhận hàng", value: "COD" },
   { label: "Thanh toán qua thẻ", value: "VISA" },
 ];
-const stripeKey = loadStripe(STRIPE_KEY)
+const stripeKey = loadStripe(STRIPE_KEY);
 
 const calculateTotalPrice = (lstProduct) => {
   const total = lstProduct?.reduce((previous, next) => {
@@ -67,8 +67,8 @@ export default function CartPage() {
       toast.error("Bạn cần đăng nhập để thực hiện chức năng này");
       router.push("/login");
     } else {
-      const currCart = localStorage.getItem(USER_CART_INFO)
-        ? parseJSON(localStorage.getItem(USER_CART_INFO))
+      const currCart = localStorage.getItem(USER_CART_INFO+ `_${userData?.user_id || ''}`)
+        ? parseJSON(localStorage.getItem(USER_CART_INFO+ `_${userData?.user_id || ''}`))
         : [];
       setCartProduct(currCart);
       setUserInfo(userData);
@@ -86,7 +86,7 @@ export default function CartPage() {
       paymentId
     );
     if (checkoutResponse?.data?.success) {
-      localStorage.removeItem(USER_CART_INFO);
+      localStorage.removeItem(USER_CART_INFO + `_${userData?.user_id || ''}`);
       setCartProduct([]);
       setVisibleCheckoutModal(false);
       return true;
@@ -110,7 +110,8 @@ export default function CartPage() {
     if (findIndex >= 0) {
       currCart[findIndex].quantity = qlt;
       setCartProduct(currCart);
-      localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+      localStorage.setItem(USER_CART_INFO + `_${userData?.user_id || ''}`, JSON.stringify(currCart));
+      window.dispatchEvent(new Event("storage"));
     }
   };
 
@@ -235,9 +236,10 @@ export default function CartPage() {
                         (item) => item?.product_id !== cartItem?.product_id
                       );
                       localStorage.setItem(
-                        USER_CART_INFO,
+                        USER_CART_INFO + `_${userData?.user_id || ''}`,
                         JSON.stringify(currCart)
                       );
+                      window.dispatchEvent(new Event("storage"));
                       setCartProduct(currCart);
                     }}
                   >
@@ -337,7 +339,7 @@ const PaymentDialog = (props) => {
       handleSubmit={async () => {
         const { first_name, last_name, email, address, phone_number } =
           userInfo;
-          
+
         const checkNull = _.compact([
           first_name,
           last_name,

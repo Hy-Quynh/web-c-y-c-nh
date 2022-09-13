@@ -1,13 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ProductList from "../../components/ProductList";
 import { getAllCategory } from "../../services/category";
 import { getListProduct } from "../../services/product";
 import Slider from "@mui/material/Slider";
 import { styled } from "@mui/material/styles";
-import { Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import style from "./style.module.scss";
-import { FORMAT_NUMBER } from "../../utils/constants";
+import { BLUR_BASE64, FORMAT_NUMBER } from "../../utils/constants";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import _debounce from "lodash/debounce";
+import Image from "next/image";
+import { useRouter } from "next/router";
 
 const PRODUCT_IN_PAGE = 12;
 const MIN_PRICE = 1000;
@@ -61,6 +64,10 @@ export default function Product() {
   const [priceSlider, setPriceSlider] = useState([MIN_PRICE, MAX_PRICE]);
   const searchText = useRef("");
   const searchInputRef = useRef(null);
+  const { ref, isComponentVisible, setIsComponentVisible } =
+    useComponentVisible(false);
+  const [searchList, setSearchList] = useState([]);
+  const router = useRouter();
 
   const getCategoryData = async () => {
     const categoryList = await getAllCategory();
@@ -120,6 +127,21 @@ export default function Product() {
       priceSlider?.[1]
     );
   }, [activeCategory]);
+
+  const getRecommendedProduct = async () => {
+    const productList = await getListProduct(
+      searchInputRef.current.value,
+      5,
+      undefined,
+      activeCategory === -1 ? undefined : categoryId
+    );
+
+    const product = productList?.data?.payload?.product || [];
+    setIsComponentVisible(true);
+    setSearchList(product);
+  };
+
+  const debounceFn = useCallback(_debounce(getRecommendedProduct, 200), []);
 
   return (
     <div>
@@ -197,37 +219,106 @@ export default function Product() {
             </div>
           </div>
           <div className="row g-0 gx-5 align-items-start mb-5">
-            <div className={`col-lg-5`}>
+            <div className={`col-lg-5`} style={{ marginTop: "20px" }}>
               <Typography gutterBottom>Tìm kiếm</Typography>
-              <div className={style.productSearchBox}>
-                <form onSubmit={(event) => event.preventDefault()}>
-                  <input
-                    type="search"
-                    plaseholder="search"
-                    onChange={(event) =>
-                      (searchText.current = event.target.value)
-                    }
-                    ref={searchInputRef}
-                  />
-                  <button
-                    type="submit"
-                    onClick={() =>
-                      getProductData(
-                        activeCategory,
-                        currentPage,
-                        searchText.current,
-                        priceSlider?.[0],
-                        priceSlider?.[1]
-                      )
-                    }
+              <div style={{ position: "relative" }}>
+                <div className={style.productSearchBox}>
+                  <form onSubmit={(event) => event.preventDefault()}>
+                    <input
+                      type="search"
+                      plaseholder="search"
+                      onChange={(event) => {
+                        searchText.current = event.target.value;
+                        debounceFn(event?.target?.value);
+                      }}
+                      ref={searchInputRef}
+                      onClick={() => {
+                        if (!isComponentVisible && searchText.current?.length) {
+                          setIsComponentVisible(true);
+                        }
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      onClick={() =>
+                        getProductData(
+                          activeCategory,
+                          currentPage,
+                          searchText.current,
+                          priceSlider?.[0],
+                          priceSlider?.[1]
+                        )
+                      }
+                    >
+                      <i className="fa fa-search" aria-hidden="true" />
+                    </button>
+                  </form>
+                </div>
+                {(isComponentVisible && (
+                  <ul
+                    ref={ref}
+                    style={{
+                      maxHeight: "300px",
+                      overflow: "auto",
+                      background: "white",
+                      position: "absolute",
+                      width: "100%",
+                      zIndex: 50,
+                      padding: "10px",
+                      borderBottom: "1px solid #3CB914",
+                      borderLeft: "1px solid #3CB914",
+                      borderRight: "1px solid #3CB914",
+                      listStyleType: "none",
+                    }}
                   >
-                    <i className="fa fa-search" aria-hidden="true" />
-                  </button>
-                </form>
+                    {searchList?.length ? (
+                      searchList?.map((item, index) => {
+                        return (
+                          <>
+                            <li
+                              key={`search-list-item-${index}`}
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                router.push(`/product/${item?.product_id}`);
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "flex-start",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <div>
+                                  <Image
+                                    src={item?.product_image}
+                                    width={50}
+                                    height={50}
+                                    placeholder="blur"
+                                    blurDataURL={BLUR_BASE64}
+                                  />
+                                </div>
+                                <div style={{ marginLeft: "20px" }}>
+                                  {item?.product_name}
+                                </div>
+                              </div>
+                            </li>
+                            {index < searchList?.length - 1 && (
+                              <Divider sx={{ my: "10px" }} />
+                            )}
+                          </>
+                        );
+                      })
+                    ) : (
+                      <li>Không có sản phẩm trùng khớp</li>
+                    )}
+                  </ul>
+                )) ||
+                  ""}
               </div>
             </div>
             <div className={`col-lg-2`} />
-            <div className="col-lg-5">
+            <div className="col-lg-5" style={{ marginTop: "20px" }}>
               <div
                 style={{
                   display: "flex",
@@ -341,4 +432,25 @@ export default function Product() {
       {/* Product End */}
     </div>
   );
+}
+
+function useComponentVisible(initialIsVisible) {
+  const [isComponentVisible, setIsComponentVisible] =
+    useState(initialIsVisible);
+  const ref = useRef(null);
+
+  const handleClickOutside = (event) => {
+    if (ref.current && !ref.current.contains(event.target)) {
+      setIsComponentVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("click", handleClickOutside, true);
+    };
+  }, []);
+
+  return { ref, isComponentVisible, setIsComponentVisible };
 }

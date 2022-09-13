@@ -319,6 +319,7 @@ export default function HomePage() {
                       onClick={() => {
                         setActiveCategory(item?.category_id);
                       }}
+                      style={{ marginTop: "20px" }}
                     >
                       <a
                         className={`btn btn-outline-primary border-2 ${

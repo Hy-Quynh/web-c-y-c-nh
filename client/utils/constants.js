@@ -13,7 +13,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import InvertColorsIcon from "@mui/icons-material/InvertColors";
-import VideocamIcon from '@mui/icons-material/Videocam';
+import VideocamIcon from "@mui/icons-material/Videocam";
 
 export const GET_PROVINCE_API = "https://provinces.open-api.vn/api/?depth=1";
 export const CHAT_HOST = "http://localhost:5004";

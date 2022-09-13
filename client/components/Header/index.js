@@ -1,14 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LoginIcon from "@mui/icons-material/Login";
 import { USER_CART_INFO, USER_INFO_KEY } from "../../utils/constants";
 import { useRouter } from "next/router";
+import { parseJSON } from "../../utils/common";
 
 export default function Header() {
+  const [cartQuantity, setCartQuantity] = useState(0);
+
   const userData =
     typeof window !== "undefined"
       ? JSON.parse(window.localStorage.getItem(USER_INFO_KEY))
       : {};
   const router = useRouter();
+
+  useEffect(() => {
+    const changeQuantityInCart = () => {
+      const cartData = parseJSON(localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ''}`)) || [];
+      setCartQuantity(cartData?.length);
+    };
+    changeQuantityInCart();
+    window.addEventListener("storage", changeQuantityInCart);
+    return () => {
+      window.removeEventListener("storage", changeQuantityInCart);
+    };
+  }, []);
 
   return (
     <div
@@ -131,7 +146,6 @@ export default function Header() {
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       localStorage.removeItem(USER_INFO_KEY);
-                      localStorage.removeItem(USER_CART_INFO);
                       router.push("/login");
                     }}
                   >
@@ -150,8 +164,20 @@ export default function Header() {
             <a
               className="btn-sm-square bg-white rounded-circle ms-3"
               href="/cart"
+              style={{ position: "relative" }}
             >
               <small className="fa fa-shopping-bag text-body" />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: 0,
+                  fontWeight: 900,
+                  color: "#F74F06",
+                }}
+              >
+                {cartQuantity}
+              </div>
             </a>
           </div>
         </div>

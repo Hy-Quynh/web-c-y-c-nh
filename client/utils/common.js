@@ -1,5 +1,5 @@
 import moment from "moment";
-import { USER_CART_INFO } from "./constants";
+import { USER_CART_INFO, USER_INFO_KEY } from "./constants";
 
 const hasNumber = (string) => {
   return /\d/.test(string);
@@ -39,9 +39,17 @@ const parseJSON = (inputString, fallback) => {
 };
 
 const addProductToCart = (cardData) => {
+  const userData =
+    typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem(USER_INFO_KEY))
+      : {};
+
   const currCart =
-    typeof window !== "undefined" && localStorage.getItem(USER_CART_INFO)
-      ? parseJSON(localStorage.getItem(USER_CART_INFO))
+    typeof window !== "undefined" &&
+    localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ""}`)
+      ? parseJSON(
+          localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ""}`)
+        )
       : [];
 
   if (currCart?.length) {
@@ -51,11 +59,21 @@ const addProductToCart = (cardData) => {
     if (findPrd >= 0) {
       currCart[findPrd].quantity =
         Number(currCart[findPrd].quantity) + Number(cardData?.quantity);
-      return localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+
+      localStorage.setItem(
+        USER_CART_INFO + `_${userData?.user_id || ""}`,
+        JSON.stringify(currCart)
+      );
+      return window.dispatchEvent(new Event("storage"));
     }
   }
   currCart?.push(cardData);
-  localStorage.setItem(USER_CART_INFO, JSON.stringify(currCart));
+  localStorage.setItem(
+    USER_CART_INFO + `_${userData?.user_id || ""}`,
+    JSON.stringify(currCart)
+  );
+
+  window.dispatchEvent(new Event("storage"));
 };
 
 export {
