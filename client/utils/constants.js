@@ -14,6 +14,7 @@ import OpacityIcon from "@mui/icons-material/Opacity";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import InvertColorsIcon from "@mui/icons-material/InvertColors";
 import VideocamIcon from "@mui/icons-material/Videocam";
+import ConstructionIcon from '@mui/icons-material/Construction';
 
 export const GET_PROVINCE_API = "https://provinces.open-api.vn/api/?depth=1";
 export const CHAT_HOST = "http://localhost:5004";
@@ -92,6 +93,12 @@ export const ADMIN_ROLE = [
     value: "admin-faq",
     href: "/admin/faq",
     icon: <LiveHelpIcon />,
+  },
+  {
+    label: "Chính sách bảo hành",
+    value: "admin-warranty",
+    href: "/admin/warranty",
+    icon: <ConstructionIcon />,
   },
   {
     label: "Công thức nấu ăn",

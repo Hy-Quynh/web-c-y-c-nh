@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ProductList from "../../components/ProductList";
 import { getAllCategory } from "../../services/category";
-import { getListProduct } from "../../services/product";
+import { addKeyWordSearch, getListProduct } from "../../services/product";
 import Slider from "@mui/material/Slider";
 import { styled } from "@mui/material/styles";
 import { Divider, Typography } from "@mui/material";
@@ -111,6 +111,10 @@ export default function Product() {
 
       setTotalPage(Math.ceil(total / PRODUCT_IN_PAGE));
       setCurrentPage(page);
+    }
+
+    if(product?.length && search?.trim()?.length){
+      await addKeyWordSearch(search?.trim())
     }
   };
 

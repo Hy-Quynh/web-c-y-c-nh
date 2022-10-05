@@ -66,7 +66,7 @@ export default function ProductDetail() {
             >
               <div className="product-dtl">
                 <div className="product-info">
-                  <div className="product-name" style={{ fontSize: "35px" }}>
+                  <div className="product-name" style={{ fontSize: "35px", lineHeight: '50px' }}>
                     {productDetail?.product_name}
                   </div>
                   <div

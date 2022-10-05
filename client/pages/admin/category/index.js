@@ -21,7 +21,6 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Box } from "@mui/system";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CustomPopover from "../../../components/CustomPopover";
-import { hasSpecicalCharacter } from "../../../utils/common";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import CustomInput from "../../../components/CustomInput";
 import CustomDialog from "../../../components/CustomDialog";
@@ -113,29 +112,14 @@ export default function ProductCategory() {
     const { category_name, category_description, category_image } =
       editCategory;
     if (
-      category_name.length <= 0 ||
-      category_description.length <= 0 ||
+      category_name?.trim()?.length <= 0 ||
+      category_description?.trim()?.length <= 0 ||
       (addCategoryModal.type === "add" && typeof category_image === "string")
     ) {
       setEditCategoryError({
         status: true,
         type: "error",
         message: "Tên, mô tả và hình ảnh không được bỏ trống",
-      });
-    } else if (
-      category_name.trim().length <= 0 ||
-      category_description.trim().length <= 0
-    ) {
-      setEditCategoryError({
-        status: true,
-        type: "error",
-        message: "Tên, mô tả không thể chỉ chứa kí tự space",
-      });
-    } else if (hasSpecicalCharacter(category_name)) {
-      setEditCategoryError({
-        status: true,
-        type: "error",
-        message: "Tên không thể chứa kí tự đặc biệt",
       });
     } else if (category_name.length <= 1) {
       setEditCategoryError({

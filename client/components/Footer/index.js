@@ -8,7 +8,7 @@ export default function Footer() {
     >
       <div className="container py-5">
         <div className="row g-5">
-          <div className="col-lg-4 col-md-6">
+          <div className="col-lg-3 col-md-6">
             <h1 className="fw-bold text-primary mb-4">
               F<span className="text-secondary">oo</span>dy
             </h1>
@@ -16,31 +16,35 @@ export default function Footer() {
             <div className="d-flex pt-2">
               <a
                 className="btn btn-square btn-outline-light rounded-circle me-1"
-                href
+                href='https://twitter.com/?lang=vi'
+                target={'_blank'}
               >
                 <i className="fab fa-twitter" />
               </a>
               <a
                 className="btn btn-square btn-outline-light rounded-circle me-1"
-                href
+                href='https://www.facebook.com/'
+                target={'_blank'}
               >
                 <i className="fab fa-facebook-f" />
               </a>
               <a
                 className="btn btn-square btn-outline-light rounded-circle me-1"
-                href
+                href='https://www.youtube.com/'
+                target={'_blank'}
               >
                 <i className="fab fa-youtube" />
               </a>
               <a
                 className="btn btn-square btn-outline-light rounded-circle me-0"
-                href
+                href='https://www.instagram.com/'
+                target={'_blank'}
               >
-                <i className="fab fa-linkedin-in" />
+                <i className="fab fa-instagram" />
               </a>
             </div>
           </div>
-          <div className="col-lg-4 col-md-6">
+          <div className="col-lg-3 col-md-6">
             <h4 className="text-light mb-4">Địa chỉ</h4>
             <p>
               <i className="fa fa-map-marker-alt me-3" />
@@ -55,7 +59,7 @@ export default function Footer() {
               info@example.com
             </p>
           </div>
-          <div className="col-lg-4 col-md-6">
+          <div className="col-lg-3 col-md-6">
             <h4 className="text-light mb-4">Đường link</h4>
             <a className="btn btn-link" href="/about">
               Về chúng tôi
@@ -72,6 +76,15 @@ export default function Footer() {
             <a className="btn btn-link" href='/faq'>
               FAQ
             </a>
+          </div>
+          <div className="col-lg-3 col-md-6">
+            <h4 className="text-light mb-4">Tổng đài hỗ trợ</h4>
+            <ul>
+              <li>Gọi mua: 0918188221</li>
+              <li>Kĩ thuật: 0918188221</li>
+              <li>Khiếu nại: 0918188221</li>
+              <li>Bảo hành: 0918188221</li>
+            </ul>
           </div>
         </div>
       </div>

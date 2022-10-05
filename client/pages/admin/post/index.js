@@ -200,7 +200,6 @@ export default function AdminPost(props) {
   const deletePost = async (postId) => {
     try {
       const deletePostRes = await deletePostData(postId);
-
       if (deletePostRes.data && deletePostRes.data.success) {
         getAllPostData(searchText.current);
         toast.success("Xoá bài viết thành công");

@@ -47,16 +47,6 @@ export default function HelperPage() {
       </div>
 
       <div style={{ padding: "20px" }} className={style.clientHelperPage}>
-        {/* <p
-          style={{
-            textAlign: "center",
-            fontWeight: 800,
-            fontSize: "30px",
-            marginBottom: "30px",
-          }}
-        >
-          Câu hỏi thường gặp
-        </p> */}
         <div
           className="section-header text-center mx-auto mb-5 wow fadeInUp"
           data-wow-delay="0.1s"
@@ -74,7 +64,7 @@ export default function HelperPage() {
               key={`helper-item-${helperIndex}`}
               style={{ marginTop: "20px" }}
             >
-              <summary className="title">
+              <summary className="title" style={{color: '#rgb(247,79,6)'}}>
                 <ArrowRightIcon />
                 {helperItem?.helper_text}
               </summary>

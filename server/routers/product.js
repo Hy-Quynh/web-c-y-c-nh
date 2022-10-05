@@ -31,6 +31,7 @@ router.get('/promo/:promoId', productController.getPromoById)
 router.put('/promo/:promoId', productController.updatePromoData)
 router.get('/purchase/:productId/:userId', productController.checkUserProductPurchase)
 router.get('/selling/info', productController.getSellingProduct)
-
+router.post('/search/keyword', productController.createKeyWordSearch)
+router.get('/search/most', productController.getProductMostSearch)
 
 module.exports = router;

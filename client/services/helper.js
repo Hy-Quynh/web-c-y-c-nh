@@ -29,3 +29,31 @@ export function deleteHelper(helperId) {
     url: `/helper/${helperId}`,
   });
 }
+
+export function getAllWarranty(){
+  return request({
+    method: "GET",
+    url: `/helper/warranty/info`,
+  });
+}
+
+export function createWarrantyInfo(warrantyContent) {
+  return request({
+    method: "POST",
+    url: `/helper/warranty/info`,
+    body: {
+      warrantyContent
+    }
+  });
+}
+
+
+export function updateWarrantyInfo(warrantyId, warrantyContent) {
+  return request({
+    method: "PUT",
+    url: `/helper/warranty/${warrantyId}/info`,
+    body: {
+      warrantyContent
+    }
+  });
+}

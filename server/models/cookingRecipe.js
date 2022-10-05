@@ -2,12 +2,20 @@ const { postgresql } = require("../config/connect");
 const { getByLimitAndOffset } = require("../utils/util");
 
 module.exports = {
-  getAllCookingRecipe: async (limit, offset) => {
+  getAllCookingRecipe: async (limit, offset, search) => {
     try {
       const limitOffset = getByLimitAndOffset(limit, offset);
       const cookingRecipeData = await postgresql.query(
-        `SELECT * FROM cooking_recipe ORDER BY cooking_recipe_id DESC ${limitOffset}`
+        `SELECT * FROM cooking_recipe WHERE ${
+          search && search !== "undefined"
+            ? `lower(unaccent(cooking_recipe_text)) LIKE '%${search
+                ?.toLowerCase()
+                ?.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")}%'`
+            : `cooking_recipe_text != ''`
+        } ORDER BY cooking_recipe_id DESC ${limitOffset}`
       );
+
       if (cookingRecipeData?.rows) {
         return cookingRecipeData?.rows;
       }
@@ -18,10 +26,17 @@ module.exports = {
     }
   },
 
-  getTotalCookingRecipe: async () => {
+  getTotalCookingRecipe: async (search) => {
     try {
       const total = await postgresql.query(
-        `SELECT COUNT(cooking_recipe_id) as total_cooking_recipe FROM cooking_recipe`
+        `SELECT COUNT(cooking_recipe_id) as total_cooking_recipe FROM cooking_recipe WHERE ${
+          search && search !== "undefined"
+            ? `lower(unaccent(cooking_recipe_text)) LIKE '%${search
+                ?.toLowerCase()
+                ?.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")}%'`
+            : `cooking_recipe_text != ''`
+        }`
       );
       return total?.rows?.[0]?.total_cooking_recipe || 0;
     } catch (error) {

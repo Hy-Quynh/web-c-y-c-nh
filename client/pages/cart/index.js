@@ -16,7 +16,11 @@ import {
 } from "../../utils/common";
 import CustomDialog from "../../components/CustomDialog";
 import CustomInput from "../../components/CustomInput";
-import { checkoutCart, getProductQuantity } from "../../services/product";
+import {
+  checkoutCart,
+  getProductById,
+  getProductQuantity,
+} from "../../services/product";
 import _ from "lodash";
 import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
@@ -34,6 +38,24 @@ const PAYMENT_METHOD = [
   { label: "Thanh toán khi nhận hàng", value: "COD" },
   { label: "Thanh toán qua thẻ", value: "VISA" },
 ];
+
+const PICKUP_METHOD = [
+  { label: "Giao hàng tận nơi", value: "SHIP" },
+  { label: "Lấy tại cửa hàng", value: "PICKUP" },
+];
+
+function formatDate(date) {
+  let d = new Date(date),
+    month = "" + (d.getMonth() + 1),
+    day = "" + d.getDate(),
+    year = d.getFullYear();
+
+  if (month.length < 2) month = "0" + month;
+  if (day.length < 2) day = "0" + day;
+
+  return [year, month, day].join("-");
+}
+
 const stripeKey = loadStripe(STRIPE_KEY);
 
 const calculateTotalPrice = (lstProduct) => {
@@ -54,7 +76,9 @@ export default function CartPage() {
   const [cartProduct, setCartProduct] = useState([]);
   const [visibleCheckoutModal, setVisibleCheckoutModal] = useState(false);
   const [paymentOption, setPaymentOption] = useState("COD");
+  const [pickUpOption, setPickUpOption] = useState("SHIP");
   const [userInfo, setUserInfo] = useState({});
+  const [pickUpTime, setPickUpTime] = useState(formatDate(new Date()));
 
   const userData =
     typeof window !== "undefined"
@@ -67,12 +91,37 @@ export default function CartPage() {
       toast.error("Bạn cần đăng nhập để thực hiện chức năng này");
       router.push("/login");
     } else {
-      const currCart = localStorage.getItem(USER_CART_INFO+ `_${userData?.user_id || ''}`)
-        ? parseJSON(localStorage.getItem(USER_CART_INFO+ `_${userData?.user_id || ''}`))
-        : [];
-      setCartProduct(currCart);
       setUserInfo(userData);
     }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const currCart = localStorage.getItem(
+        USER_CART_INFO + `_${userData?.user_id || ""}`
+      )
+        ? parseJSON(
+            localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ""}`)
+          )
+        : [];
+
+      const newCartProduct = [...currCart];
+      for (let i = 0; i < currCart?.length; i++) {
+        const detail = await getProductById(currCart?.[i]?.product_id);
+        const promo = [...(detail?.data?.payload?.promo || [])];
+        if (promo?.length) {
+          const freeProductPromo = [...promo]?.filter(
+            (item) => item?.promo_rule === "FREE_PRODUCT"
+          );
+          const freeProduct = [];
+          for (let freeProductItem of freeProductPromo) {
+            freeProduct.push(...freeProductItem?.free_product);
+          }
+          newCartProduct[i].free_product = [...freeProduct];
+        }
+      }
+      setCartProduct(newCartProduct);
+    })();
   }, []);
 
   const handleCheckout = async (paymentId) => {
@@ -83,12 +132,16 @@ export default function CartPage() {
       paymentOption,
       totalPrice,
       userInfo,
-      paymentId
+      paymentId,
+      pickUpOption,
+      pickUpTime
     );
+
     if (checkoutResponse?.data?.success) {
-      localStorage.removeItem(USER_CART_INFO + `_${userData?.user_id || ''}`);
+      localStorage.removeItem(USER_CART_INFO + `_${userData?.user_id || ""}`);
       setCartProduct([]);
       setVisibleCheckoutModal(false);
+      window.dispatchEvent(new Event("storage"));
       return true;
     }
     if (checkoutResponse?.data?.message) {
@@ -110,7 +163,10 @@ export default function CartPage() {
     if (findIndex >= 0) {
       currCart[findIndex].quantity = qlt;
       setCartProduct(currCart);
-      localStorage.setItem(USER_CART_INFO + `_${userData?.user_id || ''}`, JSON.stringify(currCart));
+      localStorage.setItem(
+        USER_CART_INFO + `_${userData?.user_id || ""}`,
+        JSON.stringify(currCart)
+      );
       window.dispatchEvent(new Event("storage"));
     }
   };
@@ -120,11 +176,12 @@ export default function CartPage() {
       <table id="cart" className="table table-hover table-condensed">
         <thead>
           <tr>
-            <th style={{ width: "50%" }}>Sản phẩm</th>
+            <th style={{ width: "30%" }}>Sản phẩm</th>
             <th style={{ width: "10%" }}>Giá</th>
             <th style={{ width: "10%" }}>Giá giảm</th>
+            <th style={{ width: "22%" }}>Tặng kèm</th>
             <th style={{ width: "8%" }}>Số lượng</th>
-            <th style={{ width: "22%" }} className="text-center">
+            <th style={{ width: "20%" }} className="text-center">
               Tổng
             </th>
             <th style={{ width: "10%" }} />
@@ -150,7 +207,12 @@ export default function CartPage() {
                     <div className="col-sm-10">
                       <h5
                         className="nomargin"
-                        style={{ cursor: "pointer", color: "#3CB914" }}
+                        style={{
+                          cursor: "pointer",
+                          color: "#3CB914",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
                         onClick={() =>
                           router?.push(`/product/${cartItem?.product_id}`)
                         }
@@ -168,6 +230,19 @@ export default function CartPage() {
                   cartItem.product_sale !== cartItem.product_price
                     ? FORMAT_NUMBER.format(Number(cartItem.product_sale)) + "đ"
                     : ""}
+                </td>
+                <td data-th="Promo">
+                  <ul>
+                    {cartItem?.free_product?.map(
+                      (freeProductItem, freeProductIndex) => {
+                        return (
+                          <li key={`free-product-item-${freeProductIndex}`}>
+                            {freeProductItem?.product_name}
+                          </li>
+                        );
+                      }
+                    )}
+                  </ul>
                 </td>
                 <td data-th="Quantity">
                   <div
@@ -195,12 +270,17 @@ export default function CartPage() {
                     >
                       <RemoveIcon sx={{ color: "white" }} />
                     </div>
-                    <input
-                      className="form-control text-center"
-                      value={cartItem?.quantity}
-                      disabled={true}
-                      style={{ border: "none" }}
-                    />
+                    <div
+                      style={{
+                        paddingTop: "6px",
+                        paddingBottom: "6px",
+                        textAlign: "center",
+                        width: "60px",
+                        background: "#f0f0f0",
+                      }}
+                    >
+                      {cartItem?.quantity || 0}
+                    </div>
                     <div
                       style={{
                         padding: "5px",
@@ -236,7 +316,7 @@ export default function CartPage() {
                         (item) => item?.product_id !== cartItem?.product_id
                       );
                       localStorage.setItem(
-                        USER_CART_INFO + `_${userData?.user_id || ''}`,
+                        USER_CART_INFO + `_${userData?.user_id || ""}`,
                         JSON.stringify(currCart)
                       );
                       window.dispatchEvent(new Event("storage"));
@@ -307,6 +387,8 @@ export default function CartPage() {
             userInfo={userInfo}
             setUserInfo={setUserInfo}
             changePaymentOption={(method) => setPaymentOption(method)}
+            changePickUpOption={(option) => setPickUpOption(option)}
+            changePickUpTime={(time) => setPickUpTime(time)}
             cartProduct={cartProduct}
           />
         </Elements>
@@ -317,6 +399,8 @@ export default function CartPage() {
 
 const PaymentDialog = (props) => {
   const [paymentOption, setPaymentOption] = useState("COD");
+  const [pickUpOption, setPickUpOption] = useState("SHIP");
+  const [pickUpTime, setPickUpTime] = useState(formatDate(new Date()));
   const {
     visible,
     onClose,
@@ -325,6 +409,8 @@ const PaymentDialog = (props) => {
     setUserInfo,
     changePaymentOption,
     cartProduct,
+    changePickUpOption,
+    changePickUpTime,
   } = props;
   const stripe = useStripe();
   const elements = useElements();
@@ -467,6 +553,64 @@ const PaymentDialog = (props) => {
       />
       <hr />
       <h5 style={{ textAlign: "center", marginTop: "20px" }}>
+        Phương thức lấy hàng
+      </h5>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          marginTop: "20px",
+        }}
+      >
+        {PICKUP_METHOD?.map((item, index) => {
+          return (
+            <div
+              key={`pickup-item-${index}`}
+              onClick={() => {
+                setPickUpOption(item?.value);
+                changePickUpOption(item?.value);
+              }}
+              style={{
+                padding: "30px",
+                border: "1px solid rgb(60,185,20)",
+                background:
+                  pickUpOption === item?.value ? "rgb(60,185,20)" : "white",
+                width: "40%",
+                cursor: "pointer",
+              }}
+            >
+              {item?.label}
+            </div>
+          );
+        })}
+      </div>
+
+      {pickUpOption === "PICKUP" ? (
+        <div
+          style={{ marginLeft: "30px", marginRight: "30px", marginTop: "20px" }}
+        >
+          <label>Thời gian dự kiến đến lấy</label>
+          <br />
+          <input
+            style={{
+              width: "100%",
+              marginTop: "10px",
+              border: "1px solid #e2e2e1",
+              padding: "10px 20px",
+            }}
+            type={"date"}
+            value={pickUpTime}
+            onChange={(event) => setPickUpTime(event?.target?.value)}
+          />
+        </div>
+      ) : (
+        <></>
+      )}
+
+      <hr />
+      <h5 style={{ textAlign: "center", marginTop: "20px" }}>
         Phương thức thanh toán
       </h5>
       <div
@@ -491,6 +635,7 @@ const PaymentDialog = (props) => {
                 background:
                   paymentOption === item?.value ? "rgb(60,185,20)" : "white",
                 width: "40%",
+                cursor: "pointer",
               }}
             >
               {item?.label}

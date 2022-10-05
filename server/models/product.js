@@ -206,12 +206,12 @@ module.exports = {
     }
   },
 
-  createNewReview: async (user_id, review, product_id) => {
+  createNewReview: async (user_id, review, product_id, star) => {
     try {
       const reviewRes = await postgresql.query(
-        `INSERT INTO product_review(review_date, user_id, review, product_id, status) VALUES(Now(), ${Number(
+        `INSERT INTO product_review(review_date, user_id, review, product_id, status, star) VALUES(Now(), ${Number(
           user_id
-        )}, '${review}', ${Number(product_id)}, 1)`
+        )}, '${review}', ${Number(product_id)}, 1, ${Number(star)})`
       );
       return reviewRes?.rows ? true : false;
     } catch (error) {
@@ -271,7 +271,9 @@ module.exports = {
     totalPrice,
     paymentMethod,
     userInfo,
-    paymentId
+    paymentId,
+    pickUpOption,
+    pickUpTime
   ) => {
     try {
       let checkValid = true;
@@ -317,13 +319,22 @@ module.exports = {
           };
       }
 
+      const pickup_time =
+        pickUpTime && pickUpTime !== "undefined"
+          ? moment(
+              moment(pickUpTime, "YYYY-MM-DD")?.startOf("day").toDate()
+            ).format("YYYY-MM-DD")
+          : "";
+
       const insertProduct =
-        await postgresql.query(`INSERT INTO product_checkout(checkout_date, total_price, user_id, user_first_name, user_last_name, user_address, user_phone, user_email, status, payment_method)
+        await postgresql.query(`INSERT INTO product_checkout(checkout_date, total_price, user_id, user_first_name, user_last_name, user_address, user_phone, user_email, status, payment_method, pickup_method, pickup_date)
       VALUES(Now(), ${Number(totalPrice)}, ${Number(userInfo?.user_id)}, '${
           userInfo?.first_name
         }', '${userInfo?.last_name}', '${userInfo?.address}', '${
           userInfo?.phone_number
-        }', '${userInfo?.email}', 1, '${paymentMethod}')`);
+        }', '${
+          userInfo?.email
+        }', 1, '${paymentMethod}', '${pickUpOption}', '${pickup_time}')`);
 
       if (insertProduct) {
         const productInsert = await postgresql.query(
@@ -334,7 +345,7 @@ module.exports = {
         if (productInsert) {
           const { checkout_id } = productInsert?.rows[0];
           for (let i = 0; i < cartData?.length; i++) {
-            await postgresql.query(`INSERT INTO product_checkout_detail(checkout_id, product_id, product_name, product_price, product_sale, product_quanlity, proudct_image) VALUES
+            await postgresql.query(`INSERT INTO product_checkout_detail(checkout_id, product_id, product_name, product_price, product_sale, product_quanlity, proudct_image, free_product) VALUES
             (${Number(checkout_id)}, ${Number(cartData[i]?.product_id)}, '${
               cartData[i]?.product_name
             }', ${Number(cartData[i]?.product_price)}, ${
@@ -345,7 +356,7 @@ module.exports = {
                 : 0
             }, ${Number(cartData[i]?.quantity)}, '${
               cartData[i]?.product_image
-            }')`);
+            }', '${JSON.stringify(cartData[i]?.free_product)}')`);
           }
 
           for (let i = 0; i < cartData?.length; i++) {
@@ -373,7 +384,7 @@ module.exports = {
     }
   },
 
-  getAllCheckoutProduct: async (fromData, toDate, limit, offset) => {
+  getAllCheckoutProduct: async (fromData, toDate, limit, offset, status) => {
     try {
       const limitOffset = getByLimitAndOffset(limit, offset);
 
@@ -392,7 +403,7 @@ module.exports = {
           : "";
 
       const checkoutRes = await postgresql.query(
-        `SELECT payment_method, checkout_id, checkout_date, total_price, user_id, user_first_name, user_last_name, user_address, user_phone, user_email, status 
+        `SELECT payment_method, pickup_method, pickup_date, checkout_id, checkout_date, total_price, user_id, user_first_name, user_last_name, user_address, user_phone, user_email, status 
         FROM product_checkout 
         WHERE ${
           date_from && date_from !== "undefined"
@@ -402,6 +413,10 @@ module.exports = {
           date_to && date_to !== "undefined"
             ? `date(checkout_date) <= date('${date_to}')`
             : "checkout_date is not null "
+        } AND ${
+          status && status !== "undefined" && Number(status) !== -1
+            ? `status = ${Number(status)}`
+            : "status > -1"
         }
         ORDER BY checkout_date DESC ${limitOffset}`
       );
@@ -791,6 +806,65 @@ module.exports = {
       return response?.rows || [];
     } catch (error) {
       console.log("getSellingProduct error >>>> ", error);
+      return [];
+    }
+  },
+
+  createKeyWordSearch: async (search) => {
+    try {
+      const keyWordRes = await postgresql.query(`SELECT * FROM keyword_search`);
+      const allKeyWord = keyWordRes?.rows;
+      const searchIndex = allKeyWord?.findIndex(
+        (item) => item?.keyword === search
+      );
+      if (searchIndex < 0) {
+        const response = await postgresql.query(
+          `INSERT INTO keyword_search(keyword, created_day, search_number) VALUES('${search}', Now(), 0)`
+        );
+        return response?.rows ? true : false;
+      } else {
+        const response = await postgresql.query(
+          `UPDATE keyword_search SET search_number=${
+            Number(allKeyWord[searchIndex]?.search_number) + 1
+          } WHERE keyword_id=${Number(allKeyWord[searchIndex]?.keyword_id)}`
+        );
+        return response?.rows ? true : false;
+      }
+    } catch (error) {
+      console.log("createKeyWordSearch error >>>> ", error);
+      return false;
+    }
+  },
+
+  getProductMostSearch: async () => {
+    try {
+      const keyWordRes = await postgresql.query(
+        `SELECT * FROM keyword_search ORDER BY search_number DESC LIMIT 10 OFFSET 0`
+      );
+      const keyWordList = keyWordRes?.rows;
+      const allProduct = [];
+      for (let i = 0; i < keyWordList?.length; i++) {
+        const product = await postgresql.query(
+          `SELECT * FROM product WHERE lower(unaccent(product_name)) LIKE '%${keyWordList?.[i]?.keyword
+            ?.toLowerCase()
+            ?.normalize("NFD")
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            )}%' ORDER BY product_id DESC`
+        );
+        allProduct?.push(...product?.rows)
+      }
+      const filterProduct = []
+      allProduct.forEach((item) => {
+        const index = filterProduct?.findIndex((it) => it?.product_id === item?.product_id)
+        if ( index < 0 ){
+          filterProduct?.push(item)
+        }
+      })
+      return filterProduct?.slice(0, 10);
+    } catch (error) {
+      console.log("getProductMostSearch error >>>> ", error);
       return [];
     }
   },

@@ -17,6 +17,7 @@ import { BLUR_BASE64, FORMAT_NUMBER } from "../../../utils/constants";
 import CloseIcon from "@mui/icons-material/Close";
 import { getCheckoutById } from "../../../services/product";
 import Image from "next/image";
+import { dateTimeConverter, parseJSON } from "../../../utils/common";
 
 export default function ViewCheckoutDetailDrawer({
   visible,
@@ -24,7 +25,6 @@ export default function ViewCheckoutDetailDrawer({
   viewData,
 }) {
   const [listCheckoutProduct, setListCheckoutProduct] = useState([]);
-
   const getListCheckoutProduct = async () => {
     try {
       const productRes = await getCheckoutById(viewData?.checkout_id);
@@ -48,7 +48,7 @@ export default function ViewCheckoutDetailDrawer({
         onClose={() => onClose()}
         sx={{
           ".css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-            maxWidth: "900px !important",
+            maxWidth: "1200px !important",
           },
         }}
       >
@@ -88,6 +88,19 @@ export default function ViewCheckoutDetailDrawer({
           <div style={{ width: "50%", marginTop: "20px" }}>
             Địa chỉ: {viewData?.user_address}
           </div>
+          <div style={{ width: "50%", marginTop: "20px" }}>
+            Phương thức nhận hàng:{" "}
+            {viewData?.pickup_method === "SHIP"
+              ? "Giao hàng"
+              : "Nhận tại cửa hàng"}
+          </div>
+          {viewData?.pickup_method === "PICKUP" ? (
+            <div style={{ width: "50%", marginTop: "20px" }}>
+              Ngày đến lấy: {dateTimeConverter(viewData?.pickup_date)}
+            </div>
+          ) : (
+            <></>
+          )}
         </Box>
         <div
           style={{ marginTop: "20px", textAlign: "center", fontSize: "28px" }}
@@ -105,6 +118,7 @@ export default function ViewCheckoutDetailDrawer({
                   <TableCell align="right">Số lượng</TableCell>
                   <TableCell align="right">Giá</TableCell>
                   <TableCell align="right">Giá khuyến mãi</TableCell>
+                  <TableCell align="left">Sản phẩm tặng kèm</TableCell>
                   <TableCell align="right">Tổng</TableCell>
                 </TableRow>
               </TableHead>
@@ -136,6 +150,24 @@ export default function ViewCheckoutDetailDrawer({
                       {row?.product_sale > 0
                         ? FORMAT_NUMBER.format(row?.product_sale)
                         : 0}
+                    </TableCell>
+                    <TableCell align="left">
+                      <ul>
+                        {parseJSON(row?.free_product)
+                          ? parseJSON(row?.free_product)?.map(
+                              (prdItem, prdIndex) => {
+                                return (
+                                  <li
+                                    key={`free-product-item-${prdIndex}`}
+                                    style={{ textAlign: "left" }}
+                                  >
+                                    {prdItem?.product_name}
+                                  </li>
+                                );
+                              }
+                            )
+                          : ""}
+                      </ul>
                     </TableCell>
                     <TableCell align="right">
                       <b>

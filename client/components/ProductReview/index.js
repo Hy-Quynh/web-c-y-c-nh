@@ -19,6 +19,8 @@ import {
 } from "../../services/product";
 import { useRouter } from "next/router";
 import DeleteIcon from "@mui/icons-material/Delete";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const REVIEW_IN_PAGE = 12;
 
@@ -32,6 +34,8 @@ export default function ProductDetailReview(props) {
   const [replyReviewId, setReplyReviewId] = useState(0);
   const [replyContent, setReplyContent] = useState("");
   const [checkUserPurchased, setCheckUserPurchased] = useState(false);
+  const [starReview, setStarReview] = useState(0);
+
   const userData =
     typeof window !== "undefined"
       ? JSON.parse(window.localStorage.getItem(USER_INFO_KEY))
@@ -52,17 +56,23 @@ export default function ProductDetailReview(props) {
         return toast.error("Nội dung bình luận không được bỏ trống");
       }
 
+      if (starReview === 0) {
+        return toast.error("Số sao đánh giá không được bỏ trống");
+      }
+
       if (userData?.user_id) {
         const createReviewRes = await createCustomerReview({
           user_id: Number(userData.user_id),
           review: addReviewData?.trim(),
           product_id: productId,
+          star: starReview,
         });
 
         if (createReviewRes.data && createReviewRes.data.success) {
           toast.success("Gửi review thành công");
           getAllReview(currentPage);
           setAddReviewData("");
+          setStarReview(0);
         } else {
           toast.error("Gửi review thất bại");
         }
@@ -125,6 +135,10 @@ export default function ProductDetailReview(props) {
   };
 
   const createReviewChildren = async () => {
+    if (!userData?.user_id) {
+      return toast?.error("Vui lòng đăng nhập để phản hồi bình luận");
+    }
+
     if (!replyContent?.trim()?.length) {
       return toast.error("Nội dung bình luận không thể bỏ trống");
     }
@@ -143,6 +157,8 @@ export default function ProductDetailReview(props) {
     }
     return toast.error("Trả lời bình luận thất bại");
   };
+
+  console.log("review data >>>>>> ", reviewData);
 
   return (
     <div style={{ marginBottom: "30px" }}>
@@ -169,6 +185,30 @@ export default function ProductDetailReview(props) {
         <div className="col-sm-2 col-md-3"></div>
         <div className="col-sm-8 col-md-6">
           <FormControl fullWidth>
+            <Stack
+              sx={{ my: "10px" }}
+              justifyContent={"center"}
+              flexDirection={"row"}
+              gap={3}
+            >
+              {[1, 2, 3, 4, 5]?.map((item) => {
+                return item <= starReview ? (
+                  <StarIcon
+                    sx={{ color: "#FC6D2E" }}
+                    onClick={() => {
+                      setStarReview(item - 1);
+                    }}
+                  />
+                ) : (
+                  <StarBorderIcon
+                    sx={{ color: "#FC6D2E" }}
+                    onClick={() => {
+                      setStarReview(item);
+                    }}
+                  />
+                );
+              })}
+            </Stack>
             <TextareaAutosize
               aria-label="minimum height"
               minRows={4}
@@ -177,6 +217,7 @@ export default function ProductDetailReview(props) {
               onChange={(event) => setAddReviewData(event.target.value)}
               style={{ padding: "5px 10px" }}
             />
+
             <Stack
               sx={{ marginTop: "10px" }}
               justifyContent={"center"}
@@ -247,6 +288,21 @@ export default function ProductDetailReview(props) {
                       >
                         {reviewItem?.first_name + " " + reviewItem?.last_name}
                       </h6>
+                    </div>
+                    <div style={{marginLeft: '10px'}}>
+                      <Stack
+                        sx={{ my: "10px" }}
+                        justifyContent={"center"}
+                        flexDirection={"row"}
+                      >
+                        {[1, 2, 3, 4, 5]?.map((item) => {
+                          return item <= reviewItem?.star ? (
+                            <StarIcon sx={{ color: "#FC6D2E", width: '15px' }} />
+                          ) : (
+                            <StarBorderIcon sx={{ color: "#FC6D2E", width: '15px' }} />
+                          );
+                        })}
+                      </Stack>
                     </div>
                   </Stack>
                   <p style={{ marginBottom: 0, fontSize: "0.8em" }}>
@@ -363,9 +419,15 @@ export default function ProductDetailReview(props) {
                         marginLeft: "20px",
                       }}
                       onClick={() => {
-                        if (replyReviewId !== reviewItem?.review_id) {
-                          setReplyContent("");
-                          setReplyReviewId(reviewItem?.review_id);
+                        if (userData?.user_id) {
+                          if (replyReviewId !== reviewItem?.review_id) {
+                            setReplyContent("");
+                            setReplyReviewId(reviewItem?.review_id);
+                          }
+                        } else {
+                          toast.error(
+                            "Vui lòng đăng nhập để phản hồi bình luận"
+                          );
                         }
                       }}
                     >

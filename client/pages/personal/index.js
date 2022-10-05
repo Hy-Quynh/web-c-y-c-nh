@@ -275,7 +275,6 @@ export default function PersonalPage(props) {
             ) : (
               <></>
             )}
-
             {historyTab === 2 ? (
               <div style={{marginTop: '20px'}}>
                 <div

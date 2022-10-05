@@ -27,10 +27,12 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
 import { USER_INFO_KEY } from "../../../utils/constants";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const inputStyle = {
   width: "80%",
-  height: "50px",
+  minHeight: "50px",
   border: "1px solid #1876D1",
   padding: "10px",
   borderRadius: "5px",
@@ -89,7 +91,7 @@ export default function ViewProductDrawer(props) {
     });
 
     if (createRes?.data?.success) {
-      setReplyContent('');
+      setReplyContent("");
       getAllReview(currentPage);
       return toast.success("Trả lời bình luân thành công");
     }
@@ -369,6 +371,27 @@ export default function ViewProductDrawer(props) {
                                   " " +
                                   reviewItem?.last_name}
                               </h6>
+
+                              <div style={{ marginLeft: "10px" }}>
+                                <Stack
+                                  sx={{ my: "10px" }}
+                                  justifyContent={"center"}
+                                  flexDirection={"row"}
+                                >
+                                  {[1, 2, 3, 4, 5]?.map((item) => {
+                                    return item <= reviewItem?.star ? (
+                                      <StarIcon
+                                        sx={{ color: "#FC6D2E", width: "15px" }}
+                                      />
+                                    ) : (
+                                      <StarBorderIcon
+                                        sx={{ color: "#FC6D2E", width: "15px" }}
+                                      />
+                                    );
+                                  })}
+                                </Stack>
+                              </div>
+
                               <div style={{ marginLeft: "15px" }}>
                                 <div
                                   onClick={async () => {

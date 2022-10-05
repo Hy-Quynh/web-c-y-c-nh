@@ -13,9 +13,9 @@ export default function ProductList({ dataSource }) {
           >
             <ProductItem
               badge={
-                item?.badge ? (
+                item?.promo?.length ? (
                   <div className="bg-secondary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">
-                    New
+                    Khuyến mãi
                   </div>
                 ) : (
                   false

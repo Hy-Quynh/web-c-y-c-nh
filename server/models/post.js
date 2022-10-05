@@ -11,7 +11,10 @@ module.exports = {
         (SELECT COUNT(bf.user_id) FROM blog_favourite bf WHERE bf.blog_id = blog.blog_id ) AS count_favourite
         FROM blog WHERE ${
           search && search !== "undefined"
-            ? `blog_title LIKE '%${search}%'`
+            ? `lower(unaccent(blog_title)) LIKE '%${search
+                ?.toLowerCase()
+                ?.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")}%'`
             : `blog_title != ''`
         } ORDER BY create_at DESC ${limitOffset}`
       );

@@ -29,6 +29,7 @@ export default function ProductItem({
       <div
         className="position-relative bg-light overflow-hidden"
         onClick={() => router?.push(`/product/${product_id}`)}
+        style={{width: '100%', height: '300px'}}
       >
         <Image
           src={product_image}
@@ -41,8 +42,8 @@ export default function ProductItem({
         />
         {badge}
       </div>
-      <div className="text-center p-4">
-        <a className="d-block h5 mb-2" href>
+      <div className="text-center p-4" style={{height: '120px', overflowY: 'hidden'}}>
+        <a className="h5 mb-2 ellipse-text" href style={{height: '50px', overflowY: 'hidden'}}>
           {product_name}
         </a>
         {Number(product_sale) === Number(product_price) ||

@@ -1,9 +1,9 @@
 import { request } from "../utils/request";
 
-export function getAllCookingRecipe(limit, offset) {
+export function getAllCookingRecipe(limit, offset, search) {
   return request({
     method: "GET",
-    url: `/cooking-recipe?limit=${limit}&offset=${offset}`,
+    url: `/cooking-recipe?limit=${limit}&offset=${offset}&search=${search}`,
   });
 }
 

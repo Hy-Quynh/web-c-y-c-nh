@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -13,7 +13,7 @@ import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CustomPopover from "../../../components/CustomPopover";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
-
+import SearchIcon from "@mui/icons-material/Search";
 import CustomDialog from "../../../components/CustomDialog";
 import CustomInput from "../../../components/CustomInput";
 import dynamic from "next/dynamic";
@@ -29,6 +29,7 @@ import {
 } from "../../../services/cookingRecipe";
 import Image from "next/image";
 import { BLUR_BASE64 } from "../../../utils/constants";
+import { debounce } from "lodash";
 
 const maxFileSize = 500000; //500 kb
 const controls = [
@@ -98,6 +99,7 @@ export default function CookingRecipe() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [popoverId, setPopoverId] = useState("");
   const [braftValue, setBraftValue] = useState("");
+  const searchText = useRef("");
 
   const setBraftEditorValue = async (value) => {
     const Braft = (await import("braft-editor")).default;
@@ -117,9 +119,9 @@ export default function CookingRecipe() {
     setPage(0);
   };
 
-  const getListCookingRecipe = async () => {
+  const getListCookingRecipe = async (search = "") => {
     try {
-      const topicRes = await getAllCookingRecipe();
+      const topicRes = await getAllCookingRecipe(undefined, undefined, search);
       if (topicRes?.data?.success) {
         setListCookingRecipe(topicRes?.data?.payload?.cookingRecipe);
       }
@@ -283,6 +285,13 @@ export default function CookingRecipe() {
     return true;
   };
 
+  const debounceSearch = useCallback(
+    debounce(() => {
+      getListCookingRecipe(searchText.current);
+    }, 200),
+    []
+  );
+
   return (
     <>
       <div>
@@ -410,6 +419,30 @@ export default function CookingRecipe() {
           </Button>
         </div>
       </Stack>
+
+      <div className="homeSearchBar">
+        <div className="search">
+          <input
+            type="text"
+            className="searchTerm"
+            placeholder="Bạn muốn tìm kiếm công thức gì?"
+            onChange={(event) => (searchText.current = event.target.value)}
+            onKeyUp={(event) => {
+              if (event?.code === "Backspace") {
+                debounceSearch();
+              }
+            }}
+          />
+          <button
+            type="submit"
+            className="searchButton"
+            onClick={() => getListCookingRecipe(searchText.current)}
+          >
+            <SearchIcon />
+          </button>
+        </div>
+      </div>
+
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer>
           <Table>
@@ -513,7 +546,7 @@ export default function CookingRecipe() {
                                   <BorderColorIcon />
                                 </Button>
                               </Stack>
-                            ) : column.id === "helper_id" ? (
+                            ) : column.id === "cooking_recipe_id" ? (
                               <div
                                 style={{
                                   textAlign: "center",

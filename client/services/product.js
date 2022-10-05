@@ -58,11 +58,11 @@ export async function getReviewByProduct({ productId, limit, page }) {
   });
 }
 
-export async function createCustomerReview({ user_id, review, product_id }) {
+export async function createCustomerReview({ user_id, review, product_id, star }) {
   return request({
     method: "POST",
     url: `/product/review`,
-    body: { user_id, review, product_id },
+    body: { user_id, review, product_id, star },
   });
 }
 
@@ -137,19 +137,21 @@ export async function checkoutCart(
   paymentMethod,
   totalPrice,
   userInfo,
-  paymentId
+  paymentId,
+  pickUpOption,
+  pickUpTime,
 ) {
   return request({
     method: "POST",
     url: `/product/cart`,
-    body: { cartData, paymentMethod, totalPrice, userInfo, paymentId },
+    body: { cartData, paymentMethod, totalPrice, userInfo, paymentId, pickUpOption, pickUpTime },
   });
 }
 
-export async function getListCheckout(fromData, toDate, limit, offset) {
+export async function getListCheckout(fromData, toDate, limit, offset, status) {
   return request({
     method: "GET",
-    url: `/product/checkout/list?fromData=${fromData}&toDate=${toDate}&limit=${limit}&${offset}`,
+    url: `/product/checkout/list?fromData=${fromData}&toDate=${toDate}&limit=${limit}&${offset}&status=${status}`,
   });
 }
 
@@ -250,4 +252,19 @@ export async function getSellingProduct(limit, offset) {
     method: "GET",
     url: `/product/selling/info?limit=${limit}&offset=${offset}`,
   });
+}
+
+export async function addKeyWordSearch(search) {
+  return request({
+    method: 'POST',
+    url: `/product/search/keyword`,
+    body: {search}
+  })
+}
+
+export async function getMostSearchProduct() {
+  return request({
+    method: 'GET',
+    url: `/product/search/most`,
+  })
 }

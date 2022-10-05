@@ -16,9 +16,9 @@ const {
 
 module.exports = {
   getAllCookingRecipe: asyncHandler(async (req, res) => {
-    const {limit, offset} = req?.query
-    const cookingRecipeList = await getAllCookingRecipe(limit, offset);
-    const totalCookingRecipe = await getTotalCookingRecipe();
+    const {limit, offset, search} = req?.query
+    const cookingRecipeList = await getAllCookingRecipe(limit, offset, search);
+    const totalCookingRecipe = await getTotalCookingRecipe(search);
 
     res.send({
       success: true,

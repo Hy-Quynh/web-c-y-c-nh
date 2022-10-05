@@ -14,6 +14,41 @@ module.exports = {
     }
   },
 
+  getAllWarranty: async () => {
+    try{
+      const warrantyData = await postgresql.query(`SELECT * FROM warranty ORDER BY warranty_id DESC`)
+      if (warrantyData?.rows) {
+        return warrantyData?.rows;
+      }
+      return [];
+    }catch (error) {
+      console.log("getAllWarranty error >>>> ", error);
+      return [];
+    }
+  },
+
+  createWaranty: async(warrantyContent) => {
+    try{
+      const createRes = await postgresql.query(
+        `INSERT INTO warranty(warranty_content, created_day) VALUES('${warrantyContent}', Now())`
+      );
+      return createRes?.rows ? true : false
+    }catch (error) {
+      console.log("createWaranty error >>>> ", error);
+      return false;
+    }
+  },
+
+  updateWaranty: async(warrantyId, warrantyContent) => {
+    try{
+      const updateRes = await postgresql.query(`UPDATE warranty SET warranty_content='${warrantyContent}' WHERE warranty_id=${Number(warrantyId)}`)
+      return updateRes?.rows ? true : false
+    }catch (error) {
+      console.log("updateWaranty error >>>> ", error);
+      return false;
+    }
+  },
+
   createHelperData: async (helperText, helperDescription) => {
     try {
       const createRes = await postgresql.query(

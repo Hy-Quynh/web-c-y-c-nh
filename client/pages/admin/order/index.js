@@ -7,7 +7,19 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { Alert, Button, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { FORMAT_NUMBER } from "../../../utils/constants";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
@@ -52,6 +64,14 @@ const columns = [
   },
 ];
 
+const STATUS_FILTER = [
+  { label: "Tất cả", value: -1 },
+  { label: "Đã huỷ", value: 0 },
+  { label: "Đặt hàng thành công", value: 1 },
+  { label: "Đang giao hàng", value: 2 },
+  { label: "Đã giao hàng", value: 3 },
+];
+
 export default function AdminOrder() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -60,6 +80,10 @@ export default function AdminOrder() {
   const [viewData, setViewData] = useState("");
   const [popoverId, setPopoverId] = useState("");
   const [changeStatusPopoverId, setChangeStatusPopoverId] = useState("");
+  const [fromDateFilter, setFromDateFilter] = useState("");
+  const [toDateFilter, setToDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(-1);
+  const [paymentFilter, setPaymentFilter] = useState("");
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -70,16 +94,12 @@ export default function AdminOrder() {
     setPage(0);
   };
 
-  const getListCheckoutData = async () => {
-    const getListRes = await getListCheckout();
+  const getListCheckoutData = async (fromData, toDate, statusFilter) => {
+    const getListRes = await getListCheckout(fromData, toDate, undefined, undefined, statusFilter);
     if (getListRes?.data?.success) {
       setListOrder(getListRes?.data?.payload);
     }
   };
-
-  useEffect(() => {
-    getListCheckoutData();
-  }, []);
 
   const handleDeleteCheckoutProduct = async (checkoutId) => {
     try {
@@ -221,13 +241,16 @@ export default function AdminOrder() {
     }
   };
 
+  useEffect(() => {
+    getListCheckoutData(fromDateFilter, toDateFilter, statusFilter);
+  }, [fromDateFilter, toDateFilter, statusFilter]);
+
   return (
     <>
       <Stack
         flexWrap={"nowrap"}
         flexDirection="row"
         justifyContent={"space-between"}
-        sx={{ marginBottom: "20px" }}
       >
         <Typography
           component="h2"
@@ -236,8 +259,85 @@ export default function AdminOrder() {
           gutterBottom
           sx={{ textAlign: "left" }}
         >
-          Quản lí sản phẩm
+          Quản lí đơn hàng
         </Typography>
+      </Stack>
+      <Stack
+        flexDirection={"row"}
+        justifyContent={"flex-start"}
+        flexWrap="wrap"
+        gap={"20px"}
+        marginBottom="20px"
+      >
+        <Box>
+          <Typography variant="p" component="p">
+            Từ ngày:
+          </Typography>
+          <TextField
+            id="outlined-basic"
+            variant="outlined"
+            type={"date"}
+            value={fromDateFilter}
+            sx={{
+              width: "300px",
+              "& legend": { display: "none" },
+              "& fieldset": { top: 0 },
+            }}
+            size="small"
+            onChange={(event) => {
+              setFromDateFilter(event.target.value);
+            }}
+          />
+        </Box>
+        <Box>
+          <Typography variant="p" component="p">
+            Đến ngày:
+          </Typography>
+          <TextField
+            id="outlined-basic"
+            variant="outlined"
+            type={"date"}
+            size="small"
+            sx={{
+              width: "300px",
+              "& legend": { display: "none" },
+              "& fieldset": { top: 0 },
+            }}
+            value={toDateFilter}
+            onChange={(event) => {
+              setToDateFilter(event.target.value);
+            }}
+          />
+        </Box>
+        <Box>
+          <Typography variant="p" component="p">
+            Trạng thái:
+          </Typography>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event?.target?.value)}
+            style={{
+              width: "300px",
+              height: "38px",
+              border: "1px solid rgb(188,189,188)",
+              borderRadius: "4px",
+              background: "#F5F5F5",
+              paddingLeft: '10px',
+              paddingRight: '10px'
+            }}
+          >
+            {STATUS_FILTER?.map((statusItem, statusIndex) => {
+              return (
+                <option
+                  value={statusItem?.value}
+                  key={`status-item-${statusIndex}`}
+                >
+                  {statusItem?.label}
+                </option>
+              );
+            })}
+          </select>
+        </Box>
       </Stack>
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer>

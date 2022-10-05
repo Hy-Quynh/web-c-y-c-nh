@@ -2,7 +2,7 @@ import * as React from "react";
 import { useRouter } from "next/router";
 import ProductList from "../components/ProductList";
 import { getAllCategory } from "../services/category";
-import { getListProduct, getSellingProduct } from "../services/product";
+import { getListProduct, getMostSearchProduct, getSellingProduct } from "../services/product";
 import { getAllPostList } from "../services/post";
 import { dateTimeConverter } from "../utils/common";
 
@@ -14,6 +14,7 @@ export default function HomePage() {
   const [listCategory, setListCategory] = React.useState([]);
   const [listProduct, setListProduct] = React.useState([]);
   const [sellingProduct, setSellingProduct] = React.useState([]);
+  const [mostSearchProduct, setMostSearchProduct] = React.useState([]);
   const [activeCategory, setActiveCategory] = React.useState(0);
   const [listPost, setListPost] = React.useState([]);
   const serviceRef = React.useRef(null);
@@ -43,17 +44,24 @@ export default function HomePage() {
   };
 
   const getSellingProductInfo = async () => {
-    const productList = await getSellingProduct()
+    const productList = await getSellingProduct();
     if (productList?.data?.success) {
       setSellingProduct(productList?.data?.payload);
     }
+  };
 
+  const getMostSearchProductData = async () => {
+    const productList = await getMostSearchProduct()
+    if ( productList?.data?.success){
+      setMostSearchProduct(productList?.data?.payload)
+    }
   }
 
   React.useEffect(() => {
     getCategoryData();
     getPostData();
-    getSellingProductInfo()
+    getSellingProductInfo();
+    getMostSearchProductData()
   }, []);
 
   React.useEffect(() => {
@@ -224,7 +232,7 @@ export default function HomePage() {
                   className="img-fluid mb-4"
                   src="img/dien-nuoc.png"
                   alt=""
-                  style={{ width: "280", height: "280px" }}
+                  style={{ width: "180px", height: "180px" }}
                 />
                 <h4 className="mb-3">Thanh toán điện nước</h4>
                 <p className="mb-4">
@@ -248,7 +256,7 @@ export default function HomePage() {
                   className="img-fluid mb-4"
                   src="img/live-stream.png"
                   alt=""
-                  style={{ width: "280", height: "280px" }}
+                  style={{ width: "180px", height: "180px" }}
                 />
                 <h4 className="mb-3">LiveStream hàng hoá</h4>
                 <p className="mb-4">
@@ -272,7 +280,7 @@ export default function HomePage() {
                   className="img-fluid mb-4"
                   src="img/nau-an.png"
                   alt=""
-                  style={{ width: "280", height: "280px" }}
+                  style={{ width: "180px", height: "180px" }}
                 />
                 <h4 className="mb-3">Công thức nấu ăn</h4>
                 <p className="mb-4">
@@ -365,6 +373,32 @@ export default function HomePage() {
           <div className="tab-content">
             <div id="tab-1" className="tab-pane fade show p-0 active">
               <ProductList dataSource={sellingProduct} />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Product End */}
+
+      {/* Product Start */}
+      <div className="container-xxl py-5">
+        <div className="container">
+          <div className="row g-0 gx-5 align-items-end">
+            <div className="col-lg-6">
+              <div
+                className="section-header text-start mb-5 wow fadeInUp"
+                data-wow-delay="0.1s"
+                style={{ maxWidth: "500px" }}
+              >
+                <h1 className="display-5 mb-3">Sản phẩm gợi ý</h1>
+                <p>
+                  Sản phẩm được nhiều người tìm kiếm nhất trong thời gian vừa qua
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="tab-content">
+            <div id="tab-1" className="tab-pane fade show p-0 active">
+              <ProductList dataSource={mostSearchProduct} />
             </div>
           </div>
         </div>

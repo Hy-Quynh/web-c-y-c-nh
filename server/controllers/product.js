@@ -32,6 +32,8 @@ const {
   updateReviewChildrenStatus,
   updateUserReviewChildren,
   getSellingProduct,
+  createKeyWordSearch,
+  getProductMostSearch,
 } = require("../models/product");
 const moment = require("moment");
 
@@ -173,8 +175,8 @@ module.exports = {
   }),
 
   createNewReview: asyncHandler(async (req, res) => {
-    const { user_id, review, product_id } = req.body;
-    const response = await createNewReview(user_id, review, product_id);
+    const { user_id, review, product_id, star } = req.body;
+    const response = await createNewReview(user_id, review, product_id, star);
     res.send({ success: response });
   }),
 
@@ -191,24 +193,36 @@ module.exports = {
   }),
 
   checkoutCart: asyncHandler(async (req, res) => {
-    const { cartData, totalPrice, paymentMethod, userInfo, paymentId } = req.body;
+    const {
+      cartData,
+      totalPrice,
+      paymentMethod,
+      userInfo,
+      paymentId,
+      pickUpOption,
+      pickUpTime,
+    } = req.body;
+
     const response = await createCartData(
       cartData,
       totalPrice,
       paymentMethod,
       userInfo,
-      paymentId
+      paymentId,
+      pickUpOption,
+      pickUpTime
     );
     res.send(response);
   }),
 
   getListCheckout: asyncHandler(async (req, res) => {
-    const { fromData, toDate, limit, offset } = req?.query;
+    const { fromData, toDate, limit, offset, status } = req?.query;
     const response = await getAllCheckoutProduct(
       fromData,
       toDate,
       limit,
-      offset
+      offset,
+      status
     );
     res.send({ success: true, payload: response });
   }),
@@ -308,34 +322,39 @@ module.exports = {
   }),
 
   createReviewChildren: asyncHandler(async (req, res) => {
-    const {review_id, user_id, review, author_type} = req?.body
-    const response = await createReviewChildren(review_id, user_id, review, author_type);
+    const { review_id, user_id, review, author_type } = req?.body;
+    const response = await createReviewChildren(
+      review_id,
+      user_id,
+      review,
+      author_type
+    );
     res.send({ success: response });
   }),
 
   deleteReviewChildren: asyncHandler(async (req, res) => {
-    const {childrenId} = req?.params
-    const response = await deleteReviewChildren(childrenId)
+    const { childrenId } = req?.params;
+    const response = await deleteReviewChildren(childrenId);
     res.send({ success: response });
   }),
 
   updateReviewChildrenStatus: asyncHandler(async (req, res) => {
-    const {childrenId} = req?.params
-    const {status} = req?.body
-    const response = await updateReviewChildrenStatus(childrenId, status)
+    const { childrenId } = req?.params;
+    const { status } = req?.body;
+    const response = await updateReviewChildrenStatus(childrenId, status);
     res.send({ success: response });
   }),
 
   updateUserReviewChildren: asyncHandler(async (req, res) => {
-    const {childrenId} = req?.params
+    const { childrenId } = req?.params;
     const { review } = req?.body;
     const response = await updateUserReviewChildren(childrenId, review);
     res.send({ success: response });
   }),
 
   getSellingProduct: asyncHandler(async (req, res) => {
-    const {limit, offset} = req?.query
-    const response = await getSellingProduct(limit, offset)
+    const { limit, offset } = req?.query;
+    const response = await getSellingProduct(limit, offset);
 
     const newProduct = [];
     for (let i = 0; i < response?.length; i++) {
@@ -371,7 +390,52 @@ module.exports = {
       });
     }
 
-
     res.send({ success: true, payload: newProduct });
-  })
+  }),
+
+  createKeyWordSearch: asyncHandler(async (req, res) => {
+    const { search } = req?.body;
+    const response = await createKeyWordSearch(search);
+    res.send({ success: response });
+  }),
+
+  getProductMostSearch: asyncHandler(async (req, res) => {
+    const response = await getProductMostSearch();
+    const newProduct = [];
+
+    for (let i = 0; i < response?.length; i++) {
+      const promo = await getProductPromo(response[i]?.product_id);
+      let product_sale = response?.[i]?.product_price;
+      const newPromo = promo?.filter((item) => {
+        if (
+          moment(item?.promo_start).isSameOrBefore(moment(), "day") &&
+          moment(item?.promo_end).isSameOrAfter(moment(), "day")
+        ) {
+          return true;
+        }
+      });
+
+      for (let j = 0; j < newPromo?.length; j++) {
+        if (newPromo?.[j]?.promo_rule !== "DISCOUNT") {
+          freeProduct = await getPromoFreeProduct(newPromo?.[j]?.promo_id);
+          newPromo[j].free_product = freeProduct;
+        } else {
+          if (newPromo?.[j]?.rule_type === "MONEY") {
+            product_sale = product_sale - newPromo?.[j]?.rule_value;
+          } else {
+            product_sale =
+              product_sale -
+              response?.[i]?.product_price * (newPromo?.[j]?.rule_value / 100);
+          }
+        }
+      }
+      newProduct?.push({
+        ...response?.[i],
+        product_sale,
+        promo: [...newPromo],
+      });
+    }
+    
+    res.send({ success: true, payload: newProduct });
+  }),
 };

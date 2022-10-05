@@ -3,9 +3,11 @@ import LoginIcon from "@mui/icons-material/Login";
 import { USER_CART_INFO, USER_INFO_KEY } from "../../utils/constants";
 import { useRouter } from "next/router";
 import { parseJSON } from "../../utils/common";
+import HeaderDrawer from "../HeaderDrawer";
 
 export default function Header() {
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [visibleDrawer, setVisibleDrawer] = useState(false);
 
   const userData =
     typeof window !== "undefined"
@@ -15,7 +17,10 @@ export default function Header() {
 
   useEffect(() => {
     const changeQuantityInCart = () => {
-      const cartData = parseJSON(localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ''}`)) || [];
+      const cartData =
+        parseJSON(
+          localStorage.getItem(USER_CART_INFO + `_${userData?.user_id || ""}`)
+        ) || [];
       setCartQuantity(cartData?.length);
     };
     changeQuantityInCart();
@@ -24,6 +29,12 @@ export default function Header() {
       window.removeEventListener("storage", changeQuantityInCart);
     };
   }, []);
+
+  const routerMark = (pathName) => {
+    return router?.pathname === pathName
+      ? { fontWeight: 800, color: "red" }
+      : {};
+  };
 
   return (
     <div
@@ -43,16 +54,32 @@ export default function Header() {
         </div>
         <div className="col-lg-6 px-5 text-end">
           <small>Theo dõi chúng tôi tại:</small>
-          <a className="text-body ms-3" href>
+          <a
+            className="text-body ms-3"
+            href="https://www.facebook.com/"
+            target={"_blank"}
+          >
             <i className="fab fa-facebook-f" />
           </a>
-          <a className="text-body ms-3" href>
+          <a
+            className="text-body ms-3"
+            href="https://twitter.com/?lang=vi"
+            target={"_blank"}
+          >
             <i className="fab fa-twitter" />
           </a>
-          <a className="text-body ms-3" href>
-            <i className="fab fa-linkedin-in" />
+          <a
+            className="text-body ms-3"
+            href="https://www.youtube.com/"
+            target={"_blank"}
+          >
+            <i className="fab fa-youtube" />
           </a>
-          <a className="text-body ms-3" href>
+          <a
+            className="text-body ms-3"
+            href="https://www.instagram.com/"
+            target={"_blank"}
+          >
             <i className="fab fa-instagram" />
           </a>
         </div>
@@ -71,61 +98,129 @@ export default function Header() {
           className="navbar-toggler me-4"
           data-bs-toggle="collapse"
           data-bs-target="#navbarCollapse"
+          onClick={() => setVisibleDrawer(true)}
         >
           <span className="navbar-toggler-icon" />
         </button>
         <div className="collapse navbar-collapse" id="navbarCollapse">
           <div className="navbar-nav ms-auto p-4 p-lg-0">
-            <a href="/" className="nav-item nav-link active">
+            <div
+              className="nav-item nav-link"
+              style={{ cursor: "pointer", ...routerMark("/") }}
+              onClick={() => {
+                router?.push("/");
+              }}
+            >
               Trang chủ
-            </a>
-            <a href="/product" className="nav-item nav-link">
+            </div>
+            <div
+              className="nav-item nav-link"
+              style={{ cursor: "pointer", ...routerMark("/product") }}
+              onClick={() => {
+                router.push("/product");
+              }}
+            >
               Sản phẩm
-            </a>
-            <a href="/post" className="nav-item nav-link">
+            </div>
+            <div
+              className="nav-item nav-link"
+              style={{ cursor: "pointer", ...routerMark("/post") }}
+              onClick={() => {
+                router.push("/post");
+              }}
+            >
               Bài viết
-            </a>
+            </div>
             <div className="nav-item dropdown">
               <a
                 href="#"
                 className="nav-link dropdown-toggle"
                 data-bs-toggle="dropdown"
+                style={
+                  router?.pathname === "/electricity-water-payment" ||
+                  router?.pathname === "/livestream" ||
+                  router?.pathname === "/cooking-recipe"
+                    ? { fontWeight: 800, color: "red" }
+                    : {}
+                }
               >
                 Dịch vụ
               </a>
               <div className="dropdown-menu m-0">
-                <a
+                <div
                   className="dropdown-item"
-                  style={{ cursor: "pointer" }}
-                  href="/electricity-water-payment"
+                  style={{
+                    cursor: "pointer",
+                    ...routerMark("/electricity-water-payment"),
+                  }}
+                  onClick={() => {
+                    router.push("/electricity-water-payment");
+                  }}
                 >
                   Thanh toán điện nước
-                </a>
-                <a
+                </div>
+                <div
                   className="dropdown-item"
-                  style={{ cursor: "pointer" }}
-                  href="/livestream"
+                  style={{
+                    cursor: "pointer",
+                    ...routerMark("/livestream"),
+                  }}
+                  onClick={() => {
+                    router.push("/livestream");
+                  }}
                 >
                   Live Stream
-                </a>
-                <a
+                </div>
+                <div
                   className="dropdown-item"
-                  style={{ cursor: "pointer" }}
-                  href="/cooking-recipe"
+                  style={{
+                    cursor: "pointer",
+                    ...routerMark("/cooking-recipe"),
+                  }}
+                  onClick={() => {
+                    router.push("/cooking-recipe");
+                  }}
                 >
                   Công thức nấu ăn
-                </a>
+                </div>
               </div>
             </div>
-            <a href="/about" className="nav-item nav-link">
+            <div
+              className="nav-item nav-link"
+              style={{ ...routerMark("/about"), cursor: "pointer" }}
+              onClick={() => {
+                router.push("/about");
+              }}
+            >
               Về chúng tôi
-            </a>
-            <a href="/feedback" className="nav-item nav-link">
+            </div>
+            <div
+              className="nav-item nav-link"
+              style={{ ...routerMark("/feedback"), cursor: "pointer" }}
+              onClick={() => {
+                router.push("/feedback");
+              }}
+            >
               Góp ý
-            </a>
-            <a href="/faq" className="nav-item nav-link">
+            </div>
+            <div
+              className="nav-item nav-link"
+              style={{ ...routerMark("/faq"), cursor: "pointer" }}
+              onClick={() => {
+                router.push("/faq");
+              }}
+            >
               FAQ
-            </a>
+            </div>
+            <div
+              className="nav-item nav-link"
+              style={{ ...routerMark("/warranty"), cursor: "pointer" }}
+              onClick={() => {
+                router.push("/warranty");
+              }}
+            >
+              Bảo hành
+            </div>
           </div>
           <div className="d-none d-lg-flex ms-2">
             {userData?.user_id ? (
@@ -163,8 +258,8 @@ export default function Header() {
             )}
             <a
               className="btn-sm-square bg-white rounded-circle ms-3"
-              href="/cart"
               style={{ position: "relative" }}
+              onClick={() => router?.push("/cart")}
             >
               <small className="fa fa-shopping-bag text-body" />
               <div
@@ -182,6 +277,11 @@ export default function Header() {
           </div>
         </div>
       </nav>
+
+      <HeaderDrawer
+        visible={visibleDrawer}
+        onClose={() => setVisibleDrawer(false)}
+      />
     </div>
   );
 }

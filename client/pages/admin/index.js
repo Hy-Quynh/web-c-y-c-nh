@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {createTheme, ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Chart from "../../components/AdminDashboard/Charts";
-import Deposits from '../../components/AdminDashboard/Deposits';
+import Deposits from "../../components/AdminDashboard/Deposits";
 import Orders from "../../components/AdminDashboard/Orders";
 import { Stack, TextField, Typography } from "@mui/material";
 import { getListCheckout } from "../../services/product";
@@ -13,39 +13,37 @@ const mdTheme = createTheme();
 
 function formatDate(date) {
   let d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
-      year = d.getFullYear();
+    month = "" + (d.getMonth() + 1),
+    day = "" + d.getDate(),
+    year = d.getFullYear();
 
-  if (month.length < 2) 
-      month = '0' + month;
-  if (day.length < 2) 
-      day = '0' + day;
+  if (month.length < 2) month = "0" + month;
+  if (day.length < 2) day = "0" + day;
 
-  return [year, month, day].join('-');
+  return [year, month, day].join("-");
 }
 
 function DashboardContent() {
   const [filterOrder, setFilterOrder] = useState([]);
-  const [filterFromDate, setFilterFromDate] = useState('');
-  const [filterToDate, setFilterToDate] = useState('');
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
 
   const getOrderDataByDate = async (fromDate, toDate) => {
-    setFilterOrder([])
+    setFilterOrder([]);
     const orderRes = await getListCheckout(fromDate, toDate);
-    if (orderRes?.data?.success){
-      setFilterOrder(orderRes?.data?.payload)
+    if (orderRes?.data?.success) {
+      setFilterOrder(orderRes?.data?.payload);
     }
   };
-  
-  useEffect(() => {
-    setFilterFromDate(formatDate(new Date()))
-    setFilterToDate(formatDate(new Date()))
-}, [])
 
-useEffect(() => {
-  getOrderDataByDate(filterFromDate, filterToDate)
-}, [filterFromDate, filterToDate])
+  useEffect(() => {
+    setFilterFromDate(formatDate(new Date()));
+    setFilterToDate(formatDate(new Date()));
+  }, []);
+
+  useEffect(() => {
+    getOrderDataByDate(filterFromDate, filterToDate);
+  }, [filterFromDate, filterToDate]);
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -62,7 +60,11 @@ useEffect(() => {
                   variant="outlined"
                   type={"date"}
                   value={filterFromDate}
-                  sx={{ width: "300px", '& legend': { display: 'none' }, '& fieldset': { top: 0 } }}
+                  sx={{
+                    width: "300px",
+                    "& legend": { display: "none" },
+                    "& fieldset": { top: 0 },
+                  }}
                   onChange={(event) => {
                     setFilterFromDate(event.target.value);
                   }}
@@ -76,7 +78,11 @@ useEffect(() => {
                   id="outlined-basic"
                   variant="outlined"
                   type={"date"}
-                  sx={{ width: "300px", '& legend': { display: 'none' }, '& fieldset': { top: 0 } }}
+                  sx={{
+                    width: "300px",
+                    "& legend": { display: "none" },
+                    "& fieldset": { top: 0 },
+                  }}
                   value={filterToDate}
                   onChange={(event) => {
                     setFilterToDate(event.target.value);
@@ -112,7 +118,7 @@ useEffect(() => {
                     height: 240,
                   }}
                 >
-                  <Chart orderData={filterOrder}/>
+                  <Chart orderData={filterOrder} />
                 </Paper>
               </Grid>
               {/* Recent Deposits */}
@@ -125,13 +131,13 @@ useEffect(() => {
                     height: 240,
                   }}
                 >
-                  <Deposits orderData={filterOrder}/>
+                  <Deposits orderData={filterOrder} />
                 </Paper>
               </Grid>
               {/* Recent Orders */}
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  <Orders orderData={filterOrder}/>
+                  <Orders orderData={filterOrder} />
                 </Paper>
               </Grid>
             </Grid>

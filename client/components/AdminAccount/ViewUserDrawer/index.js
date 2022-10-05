@@ -11,7 +11,7 @@ import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
 const inputStyle = {
   width: "90%",
-  height: "50px",
+  minHeight: "50px",
   border: "1px solid #1876D1",
   padding: "10px",
   borderRadius: "5px",
